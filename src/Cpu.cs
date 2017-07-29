@@ -94,7 +94,7 @@ public class Cpu {
       ___, sta, ___, ___, ___, sta, stx, ___, ___, ___, ___, ___, ___, sta, stx, ___, // 8
       ___, sta, ___, ___, ___, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
       ___, lda, ldx, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // A
-      ___, lda, ___, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // B
+      bcs, lda, ___, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // B
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // C
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // D
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, nop, ___, ___, ___, ___, ___, // E
@@ -130,6 +130,9 @@ public class Cpu {
       case AddressMode.Accumulator:
         address = 0;
         break;
+      case AddressMode.Relative:
+        address = (ushort) (PC + (sbyte) _memory.read((ushort) (PC + 1)));
+        break;
       case AddressMode.ZeroPage:
         address = _memory.read((ushort) (PC + 1));
         break;
@@ -155,6 +158,10 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void bcs(AddressMode mode, ushort address) {
+    PC = C ? address : PC;
   }
 
   void sec(AddressMode mode, ushort address) {
