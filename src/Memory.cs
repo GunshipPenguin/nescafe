@@ -58,6 +58,6 @@ public class Memory {
 
   // Return the index in internalRam of the address (handle mirroring)
   private ushort handleInternalRamMirror(ushort address) {
-    return (ushort) (address & 0x800);
+    return (ushort) (address % 0x800);
   }
 }
