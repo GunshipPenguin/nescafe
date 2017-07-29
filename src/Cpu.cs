@@ -219,7 +219,6 @@ public class Cpu {
   }
 
   void sta(AddressMode mode, ushort address) {
-    System.Console.WriteLine(address);
     _memory.write(address, A);
   }
 
