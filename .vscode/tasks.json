@@ -12,6 +12,11 @@
             ]
         },
         {
+            "taskName": "clean",
+            "command": "rm emulator.exe",
+            "type": "shell"
+        },
+        {
             "taskName": "run",
             "command": "./emulator.exe",
             "type": "shell"
