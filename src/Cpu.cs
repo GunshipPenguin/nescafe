@@ -96,9 +96,9 @@ public class Cpu {
       ___, lda, ldx, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // A
       bcs, lda, ___, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // B
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // C
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // D
+      bne, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // D
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, nop, ___, ___, ___, ___, ___, // E
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___  // F
+      beq, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___  // F
     };
   }
 
@@ -158,6 +158,13 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+  void bne(AddressMode mode, ushort address) {
+    PC = !Z ? address : PC;
+  }
+
+  void beq(AddressMode mode, ushort address) {
+    PC = Z ? address : PC;
   }
 
   void clc(AddressMode mode, ushort address) {
