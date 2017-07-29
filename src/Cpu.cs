@@ -128,6 +128,12 @@ public class Cpu {
       case AddressMode.Absolute:
         address = _memory.read16((ushort) (PC + 1));
         break;
+      case AddressMode.AbsoluteX:
+        address = (ushort) (_memory.read16((ushort) (PC + 1)) + X);
+        break;
+      case AddressMode.AbsoluteY:
+        address = (ushort) (_memory.read16((ushort) (PC + 1)) + Y);
+        break;
       case AddressMode.Accumulator:
         address = 0;
         break;
