@@ -97,7 +97,7 @@ public class Cpu {
       ___, lda, ___, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // B
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // C
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // D
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // E
+      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, nop, ___, ___, ___, ___, ___, // E
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___  // F
     };
   }
@@ -155,6 +155,10 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void nop(AddressMode mode, ushort address) {
+
   }
   
   void jsr(AddressMode mode, ushort address) {
