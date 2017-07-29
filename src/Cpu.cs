@@ -121,6 +121,9 @@ public class Cpu {
       case AddressMode.Implied:
         address = 0;
         break;
+      case AddressMode.Immediate:
+        address = (byte) (PC + 1);
+        break;
       case AddressMode.Accumulator:
         address = 0;
         break;
