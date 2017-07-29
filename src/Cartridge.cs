@@ -32,7 +32,7 @@ public class Cartridge {
 
   private void loadPrgRom(BinaryReader reader) {
     // Add 512 byte trainer offset (if present as specified in flags6)
-    int prgRomOffset = ((flags6 & cartridgeContainsTrainerFlag) == 0) ? 16 + 512 : 16;
+    int prgRomOffset = ((flags6 & cartridgeContainsTrainerFlag) == 0) ? 16 : 16 + 512;
 
     reader.BaseStream.Seek(prgRomOffset, SeekOrigin.Begin);
 
