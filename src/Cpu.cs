@@ -186,7 +186,7 @@ public class Cpu {
   }
 
   void pha(AddressMode mode, ushort address) {
-    _memory.write((byte) (S+1), A);
+    _memory.write((ushort) (S+1), A);
     S += 1;
   }
 
