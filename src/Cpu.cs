@@ -86,7 +86,7 @@ public class Cpu {
       ___, ora, ___, ___, ___, ora, asl, ___, ___, ora, asl, ___, ___, ora, asl, ___, // 0
       ___, ora, ___, ___, ___, ora, asl, ___, ___, ora, ___, ___, ___, ora, asl, ___, // 1
       jsr, ___, ___, ___, ___, ___, rol, ___, ___, ___, rol, ___, ___, ___, rol, ___, // 2
-      ___, ___, ___, ___, ___, ___, rol, ___, ___, ___, ___, ___, ___, ___, rol, ___, // 3
+      ___, ___, ___, ___, ___, ___, rol, ___, sec, ___, ___, ___, ___, ___, rol, ___, // 3
       ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, jmp, ___, lsr, ___, // 4
       ___, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, jmp, ___, ___, ___, // 6
@@ -155,6 +155,10 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void sec(AddressMode mode, ushort address) {
+    C = true;
   }
 
   void nop(AddressMode mode, ushort address) {
