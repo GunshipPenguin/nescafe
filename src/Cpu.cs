@@ -91,8 +91,8 @@ public class Cpu {
       ___, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 6
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 7
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 8
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 9
+      ___, sta, ___, ___, ___, sta, ___, ___, ___, ___, ___, ___, ___, sta, ___, ___, // 8
+      ___, sta, ___, ___, ___, sta, ___, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
       ___, lda, ___, ___, ___, lda, ___, ___, ___, lda, ___, ___, ___, lda, ___, ___, // A
       ___, lda, ___, ___, ___, lda, ___, ___, ___, lda, ___, ___, ___, lda, ___, ___, // B
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // C
@@ -136,10 +136,10 @@ public class Cpu {
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
     }
-
+    
     PC += (ushort) instructionSizes[opCode];
     System.Console.WriteLine(PC.ToString("X2"));
-
+    
     instructions[opCode](mode, address);
   }
 
@@ -155,6 +155,11 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void sta(AddressMode mode, ushort address) {
+    System.Console.WriteLine(address);
+    _memory.write(address, A);
   }
 
   void ora(AddressMode mode, ushort address) {
