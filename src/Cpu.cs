@@ -113,9 +113,8 @@ public class Cpu {
   private void next() {
     byte opCode = _memory.read(PC);
     System.Console.WriteLine("Executing: 0x" + opCode.ToString("X2"));
-    System.Console.WriteLine("Stack location: " + (S | 0x0100).ToString("X4"));
+
     AddressMode mode = (AddressMode) addressModes[opCode];
-    // System.Console.WriteLine(mode);
 
     // Get address to operate on
     ushort address;
@@ -141,12 +140,14 @@ public class Cpu {
       case AddressMode.ZeroPageY:
         address = (ushort) (_memory.read((ushort) (PC+1)) + Y);
         break;
+      case AddressMode.ZeroPageX:
+        address = (ushort) (_memory.read((ushort) (PC+1)) + X);
+        break;
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
     }
     
     PC += (ushort) instructionSizes[opCode];
-    // System.Console.WriteLine(PC.ToString("X2"));
     
     instructions[opCode](mode, address);
   }
