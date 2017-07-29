@@ -81,6 +81,8 @@ public class Cpu {
     _memory = memory;
     PC = 0xC000;
 
+    S = 0xFF;
+
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
       ___, ora, ___, ___, ___, ora, asl, ___, ___, ora, asl, ___, ___, ora, asl, ___, // 0
@@ -89,7 +91,7 @@ public class Cpu {
       ___, ___, ___, ___, ___, ___, rol, ___, sec, ___, ___, ___, ___, ___, rol, ___, // 3
       ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, jmp, ___, lsr, ___, // 4
       bvc, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, jmp, ___, ___, ___, // 6
+      rts, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, jmp, ___, ___, ___, // 6
       bvs, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 7
       ___, sta, ___, ___, ___, sta, stx, ___, ___, ___, ___, ___, ___, sta, stx, ___, // 8
       bcc, sta, ___, ___, ___, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
@@ -111,9 +113,9 @@ public class Cpu {
   private void next() {
     byte opCode = _memory.read(PC);
     System.Console.WriteLine("Executing: 0x" + opCode.ToString("X2"));
-
+    System.Console.WriteLine("Stack location: " + (S | 0x0100).ToString("X4"));
     AddressMode mode = (AddressMode) addressModes[opCode];
-    System.Console.WriteLine(mode);
+    // System.Console.WriteLine(mode);
 
     // Get address to operate on
     ushort address;
@@ -144,7 +146,7 @@ public class Cpu {
     }
     
     PC += (ushort) instructionSizes[opCode];
-    System.Console.WriteLine(PC.ToString("X2"));
+    // System.Console.WriteLine(PC.ToString("X2"));
     
     instructions[opCode](mode, address);
   }
@@ -157,12 +159,47 @@ public class Cpu {
   private bool isBitSet(byte value, int index) {
     return (value & (1 << index)) != 0;
   }
+  
+  private byte pullStack() {
+    byte data = _memory.read((ushort) (0x0100 | S));
+    S++;
+    return data;
+  }
+
+  private void pushStack(byte data) {
+    _memory.write((ushort) (0x100 | S), data);
+    S--;
+  }
+
+  private ushort pullStack16() {
+    byte lo = pullStack();
+    byte hi = pullStack();
+    return (ushort) ((hi << 8) | lo);
+  }
+
+  private void pushStack16(ushort data) {
+    byte lo = (byte) (data & 0xFF);
+    byte hi = (byte) ((data >> 8) & 0xFF);
+
+    pushStack(hi);
+    pushStack(lo);
+  }
 
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
   }
   
+  void rts(AddressMode mode, ushort address) {
+    PC = (ushort) (pullStack16() + 1);
+  }
+
+  void jsr(AddressMode mode, ushort address) {
+    pushStack16((ushort) (PC - 1));
+    PC = address;
+  }
+
+
   void bpl(AddressMode mode, ushort address) {
     PC = !N ? address : PC;
   }
@@ -209,12 +246,6 @@ public class Cpu {
   void nop(AddressMode mode, ushort address) {
 
   }
-  
-  void jsr(AddressMode mode, ushort address) {
-    _memory.write16((ushort) (S+1), (ushort) (address-1));
-    S += 1;
-    PC = address;
-  }
 
   void stx(AddressMode mode, ushort address) {
     _memory.write(address, X);
@@ -244,8 +275,7 @@ public class Cpu {
   }
 
   void pha(AddressMode mode, ushort address) {
-    _memory.write((ushort) (S+1), A);
-    S += 1;
+    pushStack(A);
   }
 
   void asl(AddressMode mode, ushort address) {
