@@ -83,11 +83,11 @@ public class Cpu {
 
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 0
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 1
+      ___, ___, ___, ___, ___, ___, asl, ___, ___, ___, asl, ___, ___, ___, asl, ___, // 0
+      ___, ___, ___, ___, ___, ___, asl, ___, ___, ___, ___, ___, ___, ___, asl, ___, // 1
       ___, ___, ___, ___, ___, ___, rol, ___, ___, ___, rol, ___, ___, ___, rol, ___, // 2
       ___, ___, ___, ___, ___, ___, rol, ___, ___, ___, ___, ___, ___, ___, rol, ___, // 3
-      ___, ___, ___, ___, ___, ___, lsr, ___, ___, ___, lsr, ___, ___, ___, lsr, ___, // 4
+      ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, ___, ___, lsr, ___, // 4
       ___, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 6
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 7
@@ -118,6 +118,9 @@ public class Cpu {
     // Get address to operate on
     byte address;
     switch (mode) {
+      case AddressMode.Implied:
+        address = 0;
+        break;
       case AddressMode.Accumulator:
         address = 0;
         break;
@@ -139,13 +142,32 @@ public class Cpu {
     N = ((value>>7) & 1) == 1;
   }
 
+  private bool isBitSet(byte value, int index) {
+    return (value & (1 << index)) != 0;
+  }
+
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
   }
 
+  void pha(AddressMode mode, ushort address) {
+    _memory.write((byte) (S+1), A);
+    S += 1;
+  }
+
   void asl(AddressMode mode, ushort address) {
-    
+    if (mode == AddressMode.Accumulator) {
+      C = isBitSet(A, 7);
+      A <<= 1;
+      setZn(A);
+    } else {
+      byte data = _memory.read(address);
+      C = isBitSet(data, 7);
+      byte dataUpdated = (byte) (data << 1);
+      _memory.write(address, dataUpdated);
+      setZn(dataUpdated);
+    }
   }
 
   void rol(AddressMode mode, ushort address) {
