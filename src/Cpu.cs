@@ -83,8 +83,8 @@ public class Cpu {
 
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
-      ___, ___, ___, ___, ___, ___, asl, ___, ___, ___, asl, ___, ___, ___, asl, ___, // 0
-      ___, ___, ___, ___, ___, ___, asl, ___, ___, ___, ___, ___, ___, ___, asl, ___, // 1
+      ___, ora, ___, ___, ___, ora, asl, ___, ___, ora, asl, ___, ___, ora, asl, ___, // 0
+      ___, ora, ___, ___, ___, ora, asl, ___, ___, ora, ___, ___, ___, ora, asl, ___, // 1
       ___, ___, ___, ___, ___, ___, rol, ___, ___, ___, rol, ___, ___, ___, rol, ___, // 2
       ___, ___, ___, ___, ___, ___, rol, ___, ___, ___, ___, ___, ___, ___, rol, ___, // 3
       ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, ___, ___, lsr, ___, // 4
@@ -152,6 +152,11 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void ora(AddressMode mode, ushort address) {
+    A |= _memory.read(address);
+    setZn(A);
   }
 
   void lda(AddressMode mode, ushort address) {
