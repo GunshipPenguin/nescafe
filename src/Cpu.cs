@@ -3,17 +3,6 @@ using System;
 public class Cpu {
   Memory _memory;
 
-  enum StatusFlag {
-    Carry = 1<<0,
-    Zero = 1<<1,
-    InteruptDisable = 1<<2,
-    DecimalMode = 1<<0,
-    BreakCommand = 1<<4,
-    Bit5 = 1<<5, // Always Set
-    Overflow = 1<<6,
-    Negative = 1<<7,
-  }
-
   enum AddressMode {
     Absolute=1,      // 1
     AbsoluteX,       // 2
@@ -73,8 +62,17 @@ public class Cpu {
   byte X;
   byte Y;
   byte S;
-  byte P; // Status flags register
   ushort PC; // Program Counter (16 bits)
+
+  // Status flag register (implemented as several booleans)
+  bool C; // Carry flag
+  bool Z; // Zero flag
+  bool I; // Interrpt Disable
+  bool D; // Decimal Mode (Not used)
+  bool B; // Break command
+  bool V; // Overflow flag
+  bool N; // Negative flag
+
 
   delegate void Instruction(AddressMode mode, ushort address);
   Instruction[] instructions;
@@ -129,25 +127,16 @@ public class Cpu {
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
     }
+
     PC += (ushort) instructionSizes[opCode];
     System.Console.WriteLine(PC.ToString("X2"));
 
     instructions[opCode](mode, address);
   }
 
-  private void setFlag(StatusFlag flag, bool value) {
-      switch (value) {
-        case true:
-          P &= (byte) flag;
-          break;
-        case false:
-          P &= (byte) (~((byte) ~flag));
-          break;
-      }
-  }
-
-  private bool flagIsSet(StatusFlag flag) {
-    return (P & (byte) flag) == 1;
+  private void setZn(byte value) {
+    Z = value == 0;
+    N = ((value>>7) & 1) == 1;
   }
 
   // INSTRUCTIONS FOLLOW
@@ -160,53 +149,51 @@ public class Cpu {
   }
 
   void rol(AddressMode mode, ushort address) {
-    bool carrySetOrig = flagIsSet(StatusFlag.Carry);
+    bool carrySetOrig = C;
 
     if (mode == AddressMode.Accumulator) {
       // Set carry flag to old msb
-      int msb = A >> 7;
-      setFlag(StatusFlag.Carry, msb == 1);
+      int msb = (A >> 7) & 1;
+      C = msb == 1;
 
       // Shift A left 1
       A <<= 1;
 
       // Set lsb of A to old carry flag value
-      A |= (byte) (carrySetOrig ? 1 << 7 : 0);
+      A |= (byte) (carrySetOrig ? 1 : 0);
 
-      // Set zero and carry flags
-      setFlag(StatusFlag.Zero, A == 0);
-      setFlag(StatusFlag.Carry, (A >> 7) == 1);
+      setZn(A);
     } else {
       byte data = _memory.read(address);
 
-      // Set carry flag to old msb
-      int msb = data >> 7;
-      setFlag(StatusFlag.Carry, msb == 1);
+      int msb = (data >> 7) & 1;
+      C = msb == 1;
 
-      // Shift data left 1
+      // Shift data left 1 and set lsb to old carry flag
       data <<= 1;
-
-      // Set lsb of data to old carry flag value
-      data |= (byte) (carrySetOrig ? 1 << 7 : 0);
+      data |= (byte) (carrySetOrig ? 1 : 0);
 
       _memory.write(address, data);
 
-      // Set zero and carry flags
-      setFlag(StatusFlag.Zero, data == 0);
-      setFlag(StatusFlag.Carry, (data >> 7) == 1);
+      setZn(A);
     }
   }
 
   void lsr(AddressMode mode, ushort address) {
     if (mode == AddressMode.Accumulator) {
-      setFlag(StatusFlag.Carry, (A & 1) == 1);
+      C = (A & 1) == 1;
       A >>= 1;
-      setFlag(StatusFlag.Zero, A == 0);
+
+      setZn(A);
     } else {
       byte value = _memory.read(address);
-      setFlag(StatusFlag.Carry, (value & 1) == 1);
-      byte valueUpdated = (byte) (value >> 1);
-      setFlag(StatusFlag.Zero, valueUpdated==0);
+      C = (value & 1) == 1;
+
+      byte updatedValue = (byte) (value >> 1);
+
+      _memory.write(address, updatedValue);
+
+      setZn(updatedValue);
     }
   }
 }
