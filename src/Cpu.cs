@@ -116,13 +116,16 @@ public class Cpu {
     System.Console.WriteLine(mode);
 
     // Get address to operate on
-    byte address;
+    ushort address;
     switch (mode) {
       case AddressMode.Implied:
         address = 0;
         break;
       case AddressMode.Immediate:
-        address = (byte) (PC + 1);
+        address = (ushort) (PC + 1);
+        break;
+      case AddressMode.Absolute:
+        address = _memory.read16((ushort) (PC + 1));
         break;
       case AddressMode.Accumulator:
         address = 0;

@@ -34,6 +34,12 @@ public class Memory {
     }
   }
 
+  public ushort read16(ushort address) {
+    byte lo = read(address);
+    byte hi = read((ushort) (address + 1));
+    return (ushort) ((hi << 8) | lo);
+  }
+
   public void write(ushort address, byte data) {
     if (address > 0x1FFF) {
       throw new NotImplementedException();
