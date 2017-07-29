@@ -93,8 +93,8 @@ public class Cpu {
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 7
       ___, sta, ___, ___, ___, sta, ___, ___, ___, ___, ___, ___, ___, sta, ___, ___, // 8
       ___, sta, ___, ___, ___, sta, ___, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
-      ___, lda, ___, ___, ___, lda, ___, ___, ___, lda, ___, ___, ___, lda, ___, ___, // A
-      ___, lda, ___, ___, ___, lda, ___, ___, ___, lda, ___, ___, ___, lda, ___, ___, // B
+      ___, lda, ldx, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // A
+      ___, lda, ___, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // B
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // C
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // D
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // E
@@ -155,6 +155,11 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void ldx(AddressMode mode, ushort address) {
+    X = _memory.read(address);
+    setZn(X);
   }
 
   void jmp(AddressMode mode, ushort address) {
