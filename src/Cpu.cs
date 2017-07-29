@@ -136,6 +136,9 @@ public class Cpu {
       case AddressMode.ZeroPage:
         address = _memory.read((ushort) (PC + 1));
         break;
+      case AddressMode.ZeroPageY:
+        address = (ushort) (_memory.read((ushort) (PC+1)) + Y);
+        break;
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
     }
