@@ -482,9 +482,9 @@ public class Cpu {
 
   void inc(AddressMode mode, ushort address) {
     byte data = _memory.read(address);
-    byte newData = (byte) (data + 1);
-    _memory.write(address, newData);
-    setZn(newData);
+    data += 1;
+    _memory.write(address, data);
+    setZn(data);
   }
 
   void rts(AddressMode mode, ushort address) {
