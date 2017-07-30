@@ -135,8 +135,8 @@ public class Cpu {
       bcs, lda, ___, ___, ldy, lda, ldx, ___, clv, lda, ___, ___, ldy, lda, ldx, ___, // B
       cpy, cmp, ___, ___, cpy, cmp, ___, ___, ___, cmp, ___, ___, cpy, cmp, ___, ___, // C
       bne, cmp, ___, ___, ___, cmp, ___, ___, cld, cmp, ___, ___, ___, cmp, ___, ___, // D
-      cpx, ___, ___, ___, cpx, ___, inc, ___, ___, ___, nop, ___, cpx, ___, inc, ___, // E
-      beq, ___, ___, ___, ___, ___, inc, ___, sed, ___, ___, ___, ___, ___, inc, ___  // F
+      cpx, sbc, ___, ___, cpx, sbc, inc, ___, ___, sbc, nop, ___, cpx, sbc, inc, ___, // E
+      beq, sbc, ___, ___, ___, sbc, inc, ___, sed, sbc, ___, ___, ___, sbc, inc, ___  // F
     };
   }
 
@@ -305,6 +305,22 @@ public class Cpu {
     byte data = _memory.read(address);
     setZn((byte) (Y - data));
     C = Y >= data;
+  }
+
+  void sbc(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    int notCarry = (!C ? 1 : 0);
+
+    byte result = (byte) (A - data - notCarry);
+    setZn(result);
+
+    // If an overflow occurs (result actually less than 0)
+    // the carry flag is cleared
+    C = (A - data - notCarry) >= 0 ? true : false;
+
+    V = isBitSet((byte) ~(A ^ data), 7) && !isBitSet((byte) (A ^ result), 7);
+
+    A = result;
   }
 
   void adc(AddressMode mode, ushort address) {
