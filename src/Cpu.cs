@@ -225,8 +225,8 @@ public class Cpu {
   }
   
   private byte pullStack() {
-    byte data = _memory.read((ushort) (0x0100 | S));
     S++;
+    byte data = _memory.read((ushort) (0x0100 | S));
     return data;
   }
 
