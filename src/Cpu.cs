@@ -135,8 +135,8 @@ public class Cpu {
       bcs, lda, ___, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // B
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // C
       bne, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // D
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, nop, ___, ___, ___, ___, ___, // E
-      beq, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___  // F
+      ___, ___, ___, ___, ___, ___, inc, ___, ___, ___, nop, ___, ___, ___, inc, ___, // E
+      beq, ___, ___, ___, ___, ___, inc, ___, ___, ___, ___, ___, ___, ___, inc, ___  // F
     };
   }
 
@@ -254,6 +254,13 @@ public class Cpu {
     throw new Exception("OpCode is not implemented");
   }
   
+  void inc(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    byte newData = (byte) (data + 1);
+    _memory.write(address, newData);
+    setZn(newData);
+  }
+
   void rts(AddressMode mode, ushort address) {
     PC = (ushort) (pullStack16() + 1);
   }
@@ -262,8 +269,7 @@ public class Cpu {
     pushStack16((ushort) (PC - 1));
     PC = address;
   }
-
-
+  
   void bpl(AddressMode mode, ushort address) {
     PC = !N ? address : PC;
   }
