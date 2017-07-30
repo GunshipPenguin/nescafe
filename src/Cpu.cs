@@ -301,6 +301,8 @@ public class Cpu {
       C = isBitSet(A, 0);
       A >>= 1;
       A |= (byte) (Corig ? 0x80 : 0);
+
+      setZn(A);
     } else {
       byte data = _memory.read(address);
       C = isBitSet(data, 0);
@@ -309,6 +311,8 @@ public class Cpu {
       data |= (byte) (Corig ? 0x80 : 0);
 
       _memory.write(address, data);
+
+      setZn(data);
     }
   }
 
