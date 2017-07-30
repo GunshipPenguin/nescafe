@@ -123,7 +123,7 @@ public class Cpu {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
       ___, ora, ___, ___, ___, ora, asl, ___, php, ora, asl, ___, ___, ora, asl, ___, // 0
       bpl, ora, ___, ___, ___, ora, asl, ___, clc, ora, ___, ___, ___, ora, asl, ___, // 1
-      jsr, and, ___, ___, bit, and, rol, ___, ___, and, rol, ___, bit, and, rol, ___, // 2
+      jsr, and, ___, ___, bit, and, rol, ___, plp, and, rol, ___, bit, and, rol, ___, // 2
       ___, and, ___, ___, ___, and, rol, ___, sec, and, ___, ___, ___, and, rol, ___, // 3
       ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, jmp, ___, lsr, ___, // 4
       bvc, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
@@ -280,9 +280,23 @@ public class Cpu {
     return flags;
   }
 
+  private void setProcessorFlags(byte flags) {
+    C = isBitSet(flags, 0);
+    Z = isBitSet(flags, 1);
+    I = isBitSet(flags, 2);
+    D = isBitSet(flags, 3);
+    B = isBitSet(flags, 4);
+    V = isBitSet(flags, 6);
+    N = isBitSet(flags, 7);
+  }
+
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void plp(AddressMode mode, ushort address) {
+    setProcessorFlags(pullStack());
   }
 
   void cld(AddressMode mode, ushort address) {
