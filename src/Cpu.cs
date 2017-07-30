@@ -156,8 +156,8 @@ public class Cpu {
     System.Console.Write("SP: " + S.ToString("X2") + " ");
     System.Console.Write(")    ");
 
-    System.Console.Write(PC.ToString("X4"));
-    System.Console.Write("  ");
+    System.Console.Write(PC.ToString("X4") + " ");
+    System.Console.Write(opCode.ToString("X2") + " ");
     System.Console.Write(instructionNames[opCode]);
     System.Console.Write("  ");
 
