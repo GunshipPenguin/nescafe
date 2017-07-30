@@ -121,7 +121,7 @@ public class Cpu {
 
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
-      ___, ora, ___, ___, ___, ora, asl, ___, ___, ora, asl, ___, ___, ora, asl, ___, // 0
+      ___, ora, ___, ___, ___, ora, asl, ___, php, ora, asl, ___, ___, ora, asl, ___, // 0
       bpl, ora, ___, ___, ___, ora, asl, ___, clc, ora, ___, ___, ___, ora, asl, ___, // 1
       jsr, ___, ___, ___, bit, ___, rol, ___, ___, ___, rol, ___, bit, ___, rol, ___, // 2
       ___, ___, ___, ___, ___, ___, rol, ___, sec, ___, ___, ___, ___, ___, rol, ___, // 3
@@ -249,9 +249,44 @@ public class Cpu {
     pushStack(lo);
   }
 
+  private byte getStatusFlags() {
+    byte flags = 0;
+
+    if (C) { // Carry flag, bit 0
+      flags |= (byte) (1 << 0);
+    }
+    if (Z) { // Zero flag, bit 1
+      flags |= (byte) (1 << 1);
+    }
+    if (I) { // Interrupt disable flag, bit 2
+      flags |= (byte) (1 << 2);
+    }
+    if (D) { // Decimal mode flag, bit 3
+      flags |= (byte) (1 << 3);
+    }
+    if (B) { // Break mode, bit 4
+      flags |= (byte) (1 << 4);
+    }
+    
+    flags |= (byte) (1 << 5); // Bit 5, always set
+
+    if (V) { // Overflow flag, bit 6
+      flags |= (byte) (1 << 6);
+    }
+    if (N) { // Negative flag, bit 7
+      flags |= (byte) (1 << 7);
+    }
+
+    return flags;
+  }
+
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void php(AddressMode mode, ushort address) {
+    pushStack(getStatusFlags());
   }
 
   void sed(AddressMode mode, ushort address) {
