@@ -133,8 +133,8 @@ public class Cpu {
       bcc, sta, ___, ___, sty, sta, stx, ___, tya, sta, txs, ___, ___, sta, ___, ___, // 9
       ldy, lda, ldx, ___, ldy, lda, ldx, ___, tay, lda, tax, ___, ldy, lda, ldx, ___, // A
       bcs, lda, ___, ___, ldy, lda, ldx, ___, clv, lda, tsx, ___, ldy, lda, ldx, ___, // B
-      cpy, cmp, ___, ___, cpy, cmp, ___, ___, iny, cmp, dex, ___, cpy, cmp, ___, ___, // C
-      bne, cmp, ___, ___, ___, cmp, ___, ___, cld, cmp, ___, ___, ___, cmp, ___, ___, // D
+      cpy, cmp, ___, ___, cpy, cmp, dec, ___, iny, cmp, dex, ___, cpy, cmp, dec, ___, // C
+      bne, cmp, ___, ___, ___, cmp, dec, ___, cld, cmp, ___, ___, ___, cmp, dec, ___, // D
       cpx, sbc, ___, ___, cpx, sbc, inc, ___, inx, sbc, nop, ___, cpx, sbc, inc, ___, // E
       beq, sbc, ___, ___, ___, sbc, inc, ___, sed, sbc, ___, ___, ___, sbc, inc, ___  // F
     };
@@ -471,6 +471,13 @@ public class Cpu {
   
   void sei(AddressMode mode, ushort address) {
     I = true;
+  }
+
+   void dec(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    data -= 1;
+    _memory.write(address, data);
+    setZn(data);
   }
 
   void inc(AddressMode mode, ushort address) {
