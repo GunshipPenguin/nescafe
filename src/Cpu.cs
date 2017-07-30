@@ -133,8 +133,8 @@ public class Cpu {
       bcc, sta, ___, ___, ___, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
       ___, lda, ldx, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // A
       bcs, lda, ___, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // B
-      ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // C
-      bne, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // D
+      ___, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, // C
+      bne, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, // D
       ___, ___, ___, ___, ___, ___, inc, ___, ___, ___, nop, ___, ___, ___, inc, ___, // E
       beq, ___, ___, ___, ___, ___, inc, ___, sed, ___, ___, ___, ___, ___, inc, ___  // F
     };
@@ -285,6 +285,12 @@ public class Cpu {
     throw new Exception("OpCode is not implemented");
   }
 
+  void cmp(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    C = A > data;
+    setZn((byte) (A - data));
+  }
+
   void and(AddressMode mode, ushort address) {
     byte data = _memory.read(address);
     A &= data;
@@ -355,7 +361,7 @@ public class Cpu {
   }
 
   void bcc(AddressMode mode, ushort address) {
-      PC = !C ? address : PC;
+    PC = !C ? address : PC;
   }
 
   void bcs(AddressMode mode, ushort address) {
