@@ -127,8 +127,8 @@ public class Cpu {
       bmi, and, ___, ___, ___, and, rol, ___, sec, and, ___, ___, ___, and, rol, ___, // 3
       ___, eor, ___, ___, ___, eor, lsr, ___, pha, eor, lsr, ___, jmp, eor, lsr, ___, // 4
       bvc, eor, ___, ___, ___, eor, lsr, ___, ___, eor, ___, ___, ___, eor, lsr, ___, // 5
-      rts, ___, ___, ___, ___, ___, ___, ___, pla, ___, ___, ___, jmp, ___, ___, ___, // 6
-      bvs, ___, ___, ___, ___, ___, ___, ___, sei, ___, ___, ___, ___, ___, ___, ___, // 7
+      rts, adc, ___, ___, ___, adc, ___, ___, pla, adc, ___, ___, jmp, adc, ___, ___, // 6
+      bvs, adc, ___, ___, ___, adc, ___, ___, sei, adc, ___, ___, ___, adc, ___, ___, // 7
       ___, sta, ___, ___, ___, sta, stx, ___, ___, ___, ___, ___, ___, sta, stx, ___, // 8
       bcc, sta, ___, ___, ___, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
       ___, lda, ldx, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // A
@@ -293,6 +293,24 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void adc(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    int carry = (C ? 1 : 0);
+
+    byte sum = (byte) (A + data + carry);
+    setZn(A);
+
+    C = (A + data + carry) > 0xFF;
+
+    // Sign bit is wrong if sign bit of operands is same
+    // and sign bit of result is different
+    // if <A and data> differ in sign and <A and sum> have the same sign
+    // https://stackoverflow.com/questions/29193303/6502-emulation-proper-way-to-implement-adc-and-sbc
+    V = isBitSet((byte) ~(A ^ data), 7) && !isBitSet((byte) (A ^ sum), 7);
+
+    A = sum;
   }
 
   void eor(AddressMode mode, ushort address) {
