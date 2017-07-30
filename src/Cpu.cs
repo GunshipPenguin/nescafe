@@ -134,7 +134,7 @@ public class Cpu {
       ___, lda, ldx, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // A
       bcs, lda, ___, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // B
       ___, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, // C
-      bne, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, // D
+      bne, cmp, ___, ___, ___, cmp, ___, ___, cld, cmp, ___, ___, ___, cmp, ___, ___, // D
       ___, ___, ___, ___, ___, ___, inc, ___, ___, ___, nop, ___, ___, ___, inc, ___, // E
       beq, ___, ___, ___, ___, ___, inc, ___, sed, ___, ___, ___, ___, ___, inc, ___  // F
     };
@@ -283,6 +283,10 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void cld(AddressMode mode, ushort address) {
+    D = false;
   }
 
   void cmp(AddressMode mode, ushort address) {
