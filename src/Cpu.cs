@@ -128,7 +128,7 @@ public class Cpu {
       ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, jmp, ___, lsr, ___, // 4
       bvc, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
       rts, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, jmp, ___, ___, ___, // 6
-      bvs, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // 7
+      bvs, ___, ___, ___, ___, ___, ___, ___, sei, ___, ___, ___, ___, ___, ___, ___, // 7
       ___, sta, ___, ___, ___, sta, stx, ___, ___, ___, ___, ___, ___, sta, stx, ___, // 8
       bcc, sta, ___, ___, ___, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
       ___, lda, ldx, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // A
@@ -136,7 +136,7 @@ public class Cpu {
       ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // C
       bne, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, // D
       ___, ___, ___, ___, ___, ___, inc, ___, ___, ___, nop, ___, ___, ___, inc, ___, // E
-      beq, ___, ___, ___, ___, ___, inc, ___, ___, ___, ___, ___, ___, ___, inc, ___  // F
+      beq, ___, ___, ___, ___, ___, inc, ___, sed, ___, ___, ___, ___, ___, inc, ___  // F
     };
   }
 
@@ -253,7 +253,15 @@ public class Cpu {
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
   }
+
+  void sed(AddressMode mode, ushort address) {
+    D = true;
+  }
   
+  void sei(AddressMode mode, ushort address) {
+    I = true;
+  }
+
   void inc(AddressMode mode, ushort address) {
     byte data = _memory.read(address);
     byte newData = (byte) (data + 1);
