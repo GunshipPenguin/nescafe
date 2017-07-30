@@ -57,6 +57,42 @@ public class Cpu {
   	2, 2, 0, 0, 2, 2, 2, 0, 1, 0, 1, 0, 0, 0, 0, 0
   };
 
+  String[] instructionNames = new String[256] {
+    "BRK", "ORA", "KIL", "SLO", "NOP", "ORA", "ASL", "SLO",
+    "PHP", "ORA", "ASL", "ANC", "NOP", "ORA", "ASL", "SLO",
+    "BPL", "ORA", "KIL", "SLO", "NOP", "ORA", "ASL", "SLO",
+    "CLC", "ORA", "NOP", "SLO", "NOP", "ORA", "ASL", "SLO",
+    "JSR", "AND", "KIL", "RLA", "BIT", "AND", "ROL", "RLA",
+    "PLP", "AND", "ROL", "ANC", "BIT", "AND", "ROL", "RLA",
+    "BMI", "AND", "KIL", "RLA", "NOP", "AND", "ROL", "RLA",
+    "SEC", "AND", "NOP", "RLA", "NOP", "AND", "ROL", "RLA",
+    "RTI", "EOR", "KIL", "SRE", "NOP", "EOR", "LSR", "SRE",
+    "PHA", "EOR", "LSR", "ALR", "JMP", "EOR", "LSR", "SRE",
+    "BVC", "EOR", "KIL", "SRE", "NOP", "EOR", "LSR", "SRE",
+    "CLI", "EOR", "NOP", "SRE", "NOP", "EOR", "LSR", "SRE",
+    "RTS", "ADC", "KIL", "RRA", "NOP", "ADC", "ROR", "RRA",
+    "PLA", "ADC", "ROR", "ARR", "JMP", "ADC", "ROR", "RRA",
+    "BVS", "ADC", "KIL", "RRA", "NOP", "ADC", "ROR", "RRA",
+    "SEI", "ADC", "NOP", "RRA", "NOP", "ADC", "ROR", "RRA",
+    "NOP", "STA", "NOP", "SAX", "STY", "STA", "STX", "SAX",
+    "DEY", "NOP", "TXA", "XAA", "STY", "STA", "STX", "SAX",
+    "BCC", "STA", "KIL", "AHX", "STY", "STA", "STX", "SAX",
+    "TYA", "STA", "TXS", "TAS", "SHY", "STA", "SHX", "AHX",
+    "LDY", "LDA", "LDX", "LAX", "LDY", "LDA", "LDX", "LAX",
+    "TAY", "LDA", "TAX", "LAX", "LDY", "LDA", "LDX", "LAX",
+    "BCS", "LDA", "KIL", "LAX", "LDY", "LDA", "LDX", "LAX",
+    "CLV", "LDA", "TSX", "LAS", "LDY", "LDA", "LDX", "LAX",
+    "CPY", "CMP", "NOP", "DCP", "CPY", "CMP", "DEC", "DCP",
+    "INY", "CMP", "DEX", "AXS", "CPY", "CMP", "DEC", "DCP",
+    "BNE", "CMP", "KIL", "DCP", "NOP", "CMP", "DEC", "DCP",
+    "CLD", "CMP", "NOP", "DCP", "NOP", "CMP", "DEC", "DCP",
+    "CPX", "SBC", "NOP", "ISC", "CPX", "SBC", "INC", "ISC",
+    "INX", "SBC", "NOP", "SBC", "CPX", "SBC", "INC", "ISC",
+    "BEQ", "SBC", "KIL", "ISC", "NOP", "SBC", "INC", "ISC",
+    "SED", "SBC", "NOP", "ISC", "NOP", "SBC", "INC", "ISC",
+  };
+
+
   // Registers
   byte A; // Accumulator
   byte X;
@@ -112,7 +148,18 @@ public class Cpu {
 
   private void next() {
     byte opCode = _memory.read(PC);
-    System.Console.WriteLine("Executing: 0x" + opCode.ToString("X2"));
+
+    System.Console.Write("( ");
+    System.Console.Write("A: " + A.ToString("X2") + " ");
+    System.Console.Write("X: " + X.ToString("X2") + " ");
+    System.Console.Write("Y: " + Y.ToString("X2") + " ");
+    System.Console.Write("SP: " + S.ToString("X2") + " ");
+    System.Console.Write(")    ");
+
+    System.Console.Write(PC.ToString("X4"));
+    System.Console.Write("  ");
+    System.Console.Write(instructionNames[opCode]);
+    System.Console.Write("  ");
 
     AddressMode mode = (AddressMode) addressModes[opCode];
 
@@ -124,34 +171,44 @@ public class Cpu {
         break;
       case AddressMode.Immediate:
         address = (ushort) (PC + 1);
+        System.Console.Write("#" + address.ToString("X2"));
         break;
       case AddressMode.Absolute:
         address = _memory.read16((ushort) (PC + 1));
+        System.Console.Write("$" + address.ToString("X4"));
         break;
       case AddressMode.AbsoluteX:
         address = (ushort) (_memory.read16((ushort) (PC + 1)) + X);
+        System.Console.Write("$" + address.ToString("X4") + " + X");
         break;
       case AddressMode.AbsoluteY:
         address = (ushort) (_memory.read16((ushort) (PC + 1)) + Y);
+        System.Console.Write("$" + address.ToString("X4") + " + Y");
         break;
       case AddressMode.Accumulator:
         address = 0;
+        System.Console.Write("A");
         break;
       case AddressMode.Relative:
         address = (ushort) (PC + (sbyte) _memory.read((ushort) (PC + 1)));
         break;
       case AddressMode.ZeroPage:
         address = _memory.read((ushort) (PC + 1));
+        System.Console.Write("$" + address.ToString("X2"));
         break;
       case AddressMode.ZeroPageY:
         address = (ushort) (_memory.read((ushort) (PC+1)) + Y);
+        System.Console.Write("$" + address.ToString("X2") + " + Y");
         break;
       case AddressMode.ZeroPageX:
         address = (ushort) (_memory.read((ushort) (PC+1)) + X);
+        System.Console.Write("$" + address.ToString("X2") + " + X");
         break;
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
     }
+    
+    System.Console.Write("\n");
     
     PC += (ushort) instructionSizes[opCode];
     
