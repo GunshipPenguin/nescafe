@@ -204,6 +204,9 @@ public class Cpu {
         address = (ushort) (_memory.read((ushort) (PC+1)) + X);
         System.Console.Write("$" + address.ToString("X2") + " + X");
         break;
+      case AddressMode.IndexedIndirect:
+        address = (ushort) (_memory.read16((ushort) (_memory.read((ushort) (PC + 1)) + X)));
+        break;
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
     }
