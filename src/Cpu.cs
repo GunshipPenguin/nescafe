@@ -129,13 +129,13 @@ public class Cpu {
       bvc, eor, ___, ___, ___, eor, lsr, ___, ___, eor, ___, ___, ___, eor, lsr, ___, // 5
       rts, adc, ___, ___, ___, adc, ___, ___, pla, adc, ___, ___, jmp, adc, ___, ___, // 6
       bvs, adc, ___, ___, ___, adc, ___, ___, sei, adc, ___, ___, ___, adc, ___, ___, // 7
-      ___, sta, ___, ___, ___, sta, stx, ___, ___, ___, ___, ___, ___, sta, stx, ___, // 8
-      bcc, sta, ___, ___, ___, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
+      ___, sta, ___, ___, sty, sta, stx, ___, dey, ___, ___, ___, sty, sta, stx, ___, // 8
+      bcc, sta, ___, ___, sty, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
       ldy, lda, ldx, ___, ldy, lda, ldx, ___, ___, lda, ___, ___, ldy, lda, ldx, ___, // A
       bcs, lda, ___, ___, ldy, lda, ldx, ___, clv, lda, ___, ___, ldy, lda, ldx, ___, // B
-      cpy, cmp, ___, ___, cpy, cmp, ___, ___, ___, cmp, ___, ___, cpy, cmp, ___, ___, // C
+      cpy, cmp, ___, ___, cpy, cmp, ___, ___, iny, cmp, dex, ___, cpy, cmp, ___, ___, // C
       bne, cmp, ___, ___, ___, cmp, ___, ___, cld, cmp, ___, ___, ___, cmp, ___, ___, // D
-      cpx, sbc, ___, ___, cpx, sbc, inc, ___, ___, sbc, nop, ___, cpx, sbc, inc, ___, // E
+      cpx, sbc, ___, ___, cpx, sbc, inc, ___, inx, sbc, nop, ___, cpx, sbc, inc, ___, // E
       beq, sbc, ___, ___, ___, sbc, inc, ___, sed, sbc, ___, ___, ___, sbc, inc, ___  // F
     };
   }
@@ -293,6 +293,26 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void dex(AddressMode mode, ushort address) {
+    X--;
+  }
+  
+  void dey(AddressMode mode, ushort address) {
+    Y--;
+  }
+
+  void inx(AddressMode mode, ushort address) {
+    X++;
+  }
+
+  void iny(AddressMode mode, ushort address) {
+    Y++;
+  }
+
+  void sty(AddressMode mode, ushort address) {
+    _memory.write(address, Y);
   }
 
   void cpx(AddressMode mode, ushort address) {
