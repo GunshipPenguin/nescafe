@@ -297,18 +297,22 @@ public class Cpu {
 
   void dex(AddressMode mode, ushort address) {
     X--;
+    setZn(X);
   }
   
   void dey(AddressMode mode, ushort address) {
     Y--;
+    setZn(Y);
   }
 
   void inx(AddressMode mode, ushort address) {
     X++;
+    setZn(X);
   }
 
   void iny(AddressMode mode, ushort address) {
     Y++;
+    setZn(Y);
   }
 
   void sty(AddressMode mode, ushort address) {
