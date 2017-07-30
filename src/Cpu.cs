@@ -580,29 +580,19 @@ public class Cpu {
   }
 
   void rol(AddressMode mode, ushort address) {
-    bool carrySetOrig = C;
-
+    bool Corig = C;
     if (mode == AddressMode.Accumulator) {
-      // Set carry flag to old msb
-      int msb = (A >> 7) & 1;
-      C = msb == 1;
-
-      // Shift A left 1
+      C = isBitSet(A, 7);
       A <<= 1;
-
-      // Set lsb of A to old carry flag value
-      A |= (byte) (carrySetOrig ? 1 : 0);
+      A |= (byte) (Corig ? 1 : 0);
 
       setZn(A);
     } else {
       byte data = _memory.read(address);
+      C = isBitSet(data, 7);
 
-      int msb = (data >> 7) & 1;
-      C = msb == 1;
-
-      // Shift data left 1 and set lsb to old carry flag
       data <<= 1;
-      data |= (byte) (carrySetOrig ? 1 : 0);
+      data |= (byte) (Corig ? 1 : 0);
 
       _memory.write(address, data);
 
