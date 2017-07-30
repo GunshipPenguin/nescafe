@@ -131,11 +131,11 @@ public class Cpu {
       bvs, adc, ___, ___, ___, adc, ___, ___, sei, adc, ___, ___, ___, adc, ___, ___, // 7
       ___, sta, ___, ___, ___, sta, stx, ___, ___, ___, ___, ___, ___, sta, stx, ___, // 8
       bcc, sta, ___, ___, ___, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
-      ___, lda, ldx, ___, ___, lda, ldx, ___, ___, lda, ___, ___, ___, lda, ldx, ___, // A
-      bcs, lda, ___, ___, ___, lda, ldx, ___, clv, lda, ___, ___, ___, lda, ldx, ___, // B
-      ___, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, ___, cmp, ___, ___, // C
+      ldy, lda, ldx, ___, ldy, lda, ldx, ___, ___, lda, ___, ___, ldy, lda, ldx, ___, // A
+      bcs, lda, ___, ___, ldy, lda, ldx, ___, clv, lda, ___, ___, ldy, lda, ldx, ___, // B
+      cpy, cmp, ___, ___, cpy, cmp, ___, ___, ___, cmp, ___, ___, cpy, cmp, ___, ___, // C
       bne, cmp, ___, ___, ___, cmp, ___, ___, cld, cmp, ___, ___, ___, cmp, ___, ___, // D
-      ___, ___, ___, ___, ___, ___, inc, ___, ___, ___, nop, ___, ___, ___, inc, ___, // E
+      cpx, ___, ___, ___, cpx, ___, inc, ___, ___, ___, nop, ___, cpx, ___, inc, ___, // E
       beq, ___, ___, ___, ___, ___, inc, ___, sed, ___, ___, ___, ___, ___, inc, ___  // F
     };
   }
@@ -295,6 +295,18 @@ public class Cpu {
     throw new Exception("OpCode is not implemented");
   }
 
+  void cpx(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    setZn((byte) (X - data));
+    C = X >= data;
+  }
+
+  void cpy(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    setZn((byte) (Y - data));
+    C = Y >= data;
+  }
+
   void adc(AddressMode mode, ushort address) {
     byte data = _memory.read(address);
     int carry = (C ? 1 : 0);
@@ -427,6 +439,11 @@ public class Cpu {
 
   void stx(AddressMode mode, ushort address) {
     _memory.write(address, X);
+  }
+
+  void ldy(AddressMode mode, ushort address) {
+    Y = _memory.read(address);
+    setZn(Y);
   }
 
   void ldx(AddressMode mode, ushort address) {
