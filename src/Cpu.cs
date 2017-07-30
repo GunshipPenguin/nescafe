@@ -125,7 +125,7 @@ public class Cpu {
       bpl, ora, ___, ___, ___, ora, asl, ___, clc, ora, ___, ___, ___, ora, asl, ___, // 1
       jsr, and, ___, ___, bit, and, rol, ___, plp, and, rol, ___, bit, and, rol, ___, // 2
       bmi, and, ___, ___, ___, and, rol, ___, sec, and, ___, ___, ___, and, rol, ___, // 3
-      ___, eor, ___, ___, ___, eor, lsr, ___, pha, eor, lsr, ___, jmp, eor, lsr, ___, // 4
+      rti, eor, ___, ___, ___, eor, lsr, ___, pha, eor, lsr, ___, jmp, eor, lsr, ___, // 4
       bvc, eor, ___, ___, ___, eor, lsr, ___, ___, eor, ___, ___, ___, eor, lsr, ___, // 5
       rts, adc, ___, ___, ___, adc, ___, ___, pla, adc, ___, ___, jmp, adc, ___, ___, // 6
       bvs, adc, ___, ___, ___, adc, ___, ___, sei, adc, ___, ___, ___, adc, ___, ___, // 7
@@ -293,6 +293,11 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void rti(AddressMode mode, ushort address) {
+    setProcessorFlags(pullStack());
+    PC = pullStack16();
   }
 
   void txs(AddressMode mode, ushort address) {
