@@ -121,7 +121,7 @@ public class Cpu {
 
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
-      ___, ora, ___, ___, ___, ora, asl, ___, php, ora, asl, ___, ___, ora, asl, ___, // 0
+      brk, ora, ___, ___, ___, ora, asl, ___, php, ora, asl, ___, ___, ora, asl, ___, // 0
       bpl, ora, ___, ___, ___, ora, asl, ___, clc, ora, ___, ___, ___, ora, asl, ___, // 1
       jsr, and, ___, ___, bit, and, rol, ___, plp, and, rol, ___, bit, and, rol, ___, // 2
       bmi, and, ___, ___, ___, and, rol, ___, sec, and, ___, ___, ___, and, rol, ___, // 3
@@ -302,6 +302,13 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void brk(AddressMode mode, ushort address) {
+    pushStack16(PC);
+    pushStack(getStatusFlags());
+    B = true;
+    PC = _memory.read16((ushort) 0xFFFE);
   }
 
   void ror(AddressMode mode, ushort address) {
