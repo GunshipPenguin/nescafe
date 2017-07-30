@@ -123,8 +123,8 @@ public class Cpu {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
       ___, ora, ___, ___, ___, ora, asl, ___, php, ora, asl, ___, ___, ora, asl, ___, // 0
       bpl, ora, ___, ___, ___, ora, asl, ___, clc, ora, ___, ___, ___, ora, asl, ___, // 1
-      jsr, ___, ___, ___, bit, ___, rol, ___, ___, ___, rol, ___, bit, ___, rol, ___, // 2
-      ___, ___, ___, ___, ___, ___, rol, ___, sec, ___, ___, ___, ___, ___, rol, ___, // 3
+      jsr, and, ___, ___, bit, and, rol, ___, ___, and, rol, ___, bit, and, rol, ___, // 2
+      ___, and, ___, ___, ___, and, rol, ___, sec, and, ___, ___, ___, and, rol, ___, // 3
       ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, jmp, ___, lsr, ___, // 4
       bvc, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
       rts, ___, ___, ___, ___, ___, ___, ___, pla, ___, ___, ___, jmp, ___, ___, ___, // 6
@@ -283,6 +283,12 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void and(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    A &= data;
+    setZn(A);
   }
 
   void pla(AddressMode mode, ushort address) {
