@@ -125,8 +125,8 @@ public class Cpu {
       bpl, ora, ___, ___, ___, ora, asl, ___, clc, ora, ___, ___, ___, ora, asl, ___, // 1
       jsr, and, ___, ___, bit, and, rol, ___, plp, and, rol, ___, bit, and, rol, ___, // 2
       bmi, and, ___, ___, ___, and, rol, ___, sec, and, ___, ___, ___, and, rol, ___, // 3
-      ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, jmp, ___, lsr, ___, // 4
-      bvc, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
+      ___, eor, ___, ___, ___, eor, lsr, ___, pha, eor, lsr, ___, jmp, eor, lsr, ___, // 4
+      bvc, eor, ___, ___, ___, eor, lsr, ___, ___, eor, ___, ___, ___, eor, lsr, ___, // 5
       rts, ___, ___, ___, ___, ___, ___, ___, pla, ___, ___, ___, jmp, ___, ___, ___, // 6
       bvs, ___, ___, ___, ___, ___, ___, ___, sei, ___, ___, ___, ___, ___, ___, ___, // 7
       ___, sta, ___, ___, ___, sta, stx, ___, ___, ___, ___, ___, ___, sta, stx, ___, // 8
@@ -293,6 +293,11 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void eor(AddressMode mode, ushort address) {
+    byte data = _memory.read(address);
+    A |= data;
   }
 
   void clv(AddressMode mode, ushort address) {
