@@ -190,7 +190,7 @@ public class Cpu {
         System.Console.Write("A");
         break;
       case AddressMode.Relative:
-        address = (ushort) (PC + (sbyte) _memory.read((ushort) (PC + 1)));
+        address = (ushort) (PC + (sbyte) _memory.read((ushort) (PC + 1)) + 2);
         break;
       case AddressMode.ZeroPage:
         address = _memory.read((ushort) (PC + 1));
