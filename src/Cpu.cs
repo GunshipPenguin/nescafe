@@ -129,8 +129,8 @@ public class Cpu {
       bvc, eor, ___, ___, ___, eor, lsr, ___, ___, eor, ___, ___, ___, eor, lsr, ___, // 5
       rts, adc, ___, ___, ___, adc, ___, ___, pla, adc, ___, ___, jmp, adc, ___, ___, // 6
       bvs, adc, ___, ___, ___, adc, ___, ___, sei, adc, ___, ___, ___, adc, ___, ___, // 7
-      ___, sta, ___, ___, sty, sta, stx, ___, dey, ___, ___, ___, sty, sta, stx, ___, // 8
-      bcc, sta, ___, ___, sty, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
+      ___, sta, ___, ___, sty, sta, stx, ___, dey, ___, txa, ___, sty, sta, stx, ___, // 8
+      bcc, sta, ___, ___, sty, sta, stx, ___, tya, sta, ___, ___, ___, sta, ___, ___, // 9
       ldy, lda, ldx, ___, ldy, lda, ldx, ___, tay, lda, tax, ___, ldy, lda, ldx, ___, // A
       bcs, lda, ___, ___, ldy, lda, ldx, ___, clv, lda, ___, ___, ldy, lda, ldx, ___, // B
       cpy, cmp, ___, ___, cpy, cmp, ___, ___, iny, cmp, dex, ___, cpy, cmp, ___, ___, // C
@@ -293,6 +293,16 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void txa(AddressMode mode, ushort address) {
+    A = X;
+    setZn(A);
+  }
+
+  void tya(AddressMode mode, ushort address) {
+    A = Y;
+    setZn(A);
   }
 
   void tay(AddressMode mode, ushort address) {
