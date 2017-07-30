@@ -127,8 +127,8 @@ public class Cpu {
       bmi, and, ___, ___, ___, and, rol, ___, sec, and, ___, ___, ___, and, rol, ___, // 3
       rti, eor, ___, ___, ___, eor, lsr, ___, pha, eor, lsr, ___, jmp, eor, lsr, ___, // 4
       bvc, eor, ___, ___, ___, eor, lsr, ___, ___, eor, ___, ___, ___, eor, lsr, ___, // 5
-      rts, adc, ___, ___, ___, adc, ___, ___, pla, adc, ___, ___, jmp, adc, ___, ___, // 6
-      bvs, adc, ___, ___, ___, adc, ___, ___, sei, adc, ___, ___, ___, adc, ___, ___, // 7
+      rts, adc, ___, ___, ___, adc, ror, ___, pla, adc, ror, ___, jmp, adc, ror, ___, // 6
+      bvs, adc, ___, ___, ___, adc, ror, ___, sei, adc, ___, ___, ___, adc, ror, ___, // 7
       ___, sta, ___, ___, sty, sta, stx, ___, dey, ___, txa, ___, sty, sta, stx, ___, // 8
       bcc, sta, ___, ___, sty, sta, stx, ___, tya, sta, txs, ___, ___, sta, ___, ___, // 9
       ldy, lda, ldx, ___, ldy, lda, ldx, ___, tay, lda, tax, ___, ldy, lda, ldx, ___, // A
@@ -293,6 +293,23 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void ror(AddressMode mode, ushort address) {
+    bool Corig = C;
+    if (mode == AddressMode.Accumulator) {
+      C = isBitSet(A, 0);
+      A >>= 1;
+      A |= (byte) (Corig ? 0x80 : 0);
+    } else {
+      byte data = _memory.read(address);
+      C = isBitSet(data, 0);
+
+      data >>= 1;
+      data |= (byte) (Corig ? 0x80 : 0);
+
+      _memory.write(address, data);
+    }
   }
 
   void rti(AddressMode mode, ushort address) {
