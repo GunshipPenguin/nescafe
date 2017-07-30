@@ -127,7 +127,7 @@ public class Cpu {
       ___, ___, ___, ___, ___, ___, rol, ___, sec, ___, ___, ___, ___, ___, rol, ___, // 3
       ___, ___, ___, ___, ___, ___, lsr, ___, pha, ___, lsr, ___, jmp, ___, lsr, ___, // 4
       bvc, ___, ___, ___, ___, ___, lsr, ___, ___, ___, ___, ___, ___, ___, lsr, ___, // 5
-      rts, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, ___, jmp, ___, ___, ___, // 6
+      rts, ___, ___, ___, ___, ___, ___, ___, pla, ___, ___, ___, jmp, ___, ___, ___, // 6
       bvs, ___, ___, ___, ___, ___, ___, ___, sei, ___, ___, ___, ___, ___, ___, ___, // 7
       ___, sta, ___, ___, ___, sta, stx, ___, ___, ___, ___, ___, ___, sta, stx, ___, // 8
       bcc, sta, ___, ___, ___, sta, stx, ___, ___, sta, ___, ___, ___, sta, ___, ___, // 9
@@ -283,6 +283,10 @@ public class Cpu {
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
     throw new Exception("OpCode is not implemented");
+  }
+
+  void pla(AddressMode mode, ushort address) {
+    A = pullStack();
   }
 
   void php(AddressMode mode, ushort address) {
