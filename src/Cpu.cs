@@ -419,15 +419,15 @@ public class Cpu {
     int carry = (C ? 1 : 0);
 
     byte sum = (byte) (A + data + carry);
-    setZn(A);
+    setZn(sum);
 
     C = (A + data + carry) > 0xFF;
 
     // Sign bit is wrong if sign bit of operands is same
     // and sign bit of result is different
-    // if <A and data> differ in sign and <A and sum> have the same sign
+    // if <A and data> differ in sign and <A and sum> have the same sign, set the overflow flag
     // https://stackoverflow.com/questions/29193303/6502-emulation-proper-way-to-implement-adc-and-sbc
-    V = isBitSet((byte) ~(A ^ data), 7) && !isBitSet((byte) (A ^ sum), 7);
+    V = (~(A ^ data) & (A ^ sum) & 0x80) != 0;
 
     A = sum;
   }
