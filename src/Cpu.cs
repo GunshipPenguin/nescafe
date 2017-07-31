@@ -193,10 +193,10 @@ public class Cpu {
         address = _memory.read((ushort) (PC + 1));
         break;
       case AddressMode.ZeroPageY:
-        address = (ushort) (_memory.read((ushort) (PC+1)) + Y);
+        address = (ushort) ((_memory.read((ushort) (PC+1)) + Y) & 0xFF);
         break;
       case AddressMode.ZeroPageX:
-        address = (ushort) (_memory.read((ushort) (PC+1)) + X);
+        address = (ushort) ((_memory.read((ushort) (PC+1)) + X) & 0xFF);
         break;
       case AddressMode.Indirect:
         address = (ushort) _memory.read16IndirectBug((ushort) _memory.read16((ushort) (PC + 1)));
