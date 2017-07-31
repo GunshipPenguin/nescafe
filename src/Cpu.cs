@@ -446,7 +446,7 @@ public class Cpu {
   }
 
   void plp(AddressMode mode, ushort address) {
-    setProcessorFlags(pullStack());
+    setProcessorFlags((byte) (pullStack() & ~(0x10)));
   }
 
   void cld(AddressMode mode, ushort address) {
