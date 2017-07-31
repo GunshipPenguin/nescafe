@@ -40,6 +40,19 @@ public class Memory {
     return (ushort) ((hi << 8) | lo);
   }
 
+  // Emulates the JMP page boundary bug in 6502
+  public ushort read16IndirectBug(ushort address) {
+    ushort data;
+    if ((address & 0xFF) == 0xFF) {
+      byte lo = read(address);
+      byte hi = read((ushort) (address & (~0xFF))); // Wrap around to start of page eg. 0x02FF becomes 0x0200
+      data = (ushort) ((hi << 8) | lo);
+    } else {
+      data = read16(address);
+    }
+    return data;
+  }
+
   public void write(ushort address, byte data) {
     if (address > 0x1FFF) {
       throw new NotImplementedException();
