@@ -117,7 +117,12 @@ public class Cpu {
     _memory = memory;
     PC = 0xC000;
 
-    S = 0xFF;
+    // Set up startup state
+    S = 0xFD;
+    A = 0;
+    X = 0;
+    Y = 0;
+    setProcessorFlags((byte) 0x34);
 
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
