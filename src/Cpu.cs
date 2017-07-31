@@ -57,42 +57,6 @@ public class Cpu {
     2, 2, 0, 0, 2, 2, 2, 0, 1, 3, 1, 0, 3, 3, 3, 0,
   };
 
-  String[] instructionNames = new String[256] {
-    "BRK", "ORA", "KIL", "SLO", "NOP", "ORA", "ASL", "SLO",
-    "PHP", "ORA", "ASL", "ANC", "NOP", "ORA", "ASL", "SLO",
-    "BPL", "ORA", "KIL", "SLO", "NOP", "ORA", "ASL", "SLO",
-    "CLC", "ORA", "NOP", "SLO", "NOP", "ORA", "ASL", "SLO",
-    "JSR", "AND", "KIL", "RLA", "BIT", "AND", "ROL", "RLA",
-    "PLP", "AND", "ROL", "ANC", "BIT", "AND", "ROL", "RLA",
-    "BMI", "AND", "KIL", "RLA", "NOP", "AND", "ROL", "RLA",
-    "SEC", "AND", "NOP", "RLA", "NOP", "AND", "ROL", "RLA",
-    "RTI", "EOR", "KIL", "SRE", "NOP", "EOR", "LSR", "SRE",
-    "PHA", "EOR", "LSR", "ALR", "JMP", "EOR", "LSR", "SRE",
-    "BVC", "EOR", "KIL", "SRE", "NOP", "EOR", "LSR", "SRE",
-    "CLI", "EOR", "NOP", "SRE", "NOP", "EOR", "LSR", "SRE",
-    "RTS", "ADC", "KIL", "RRA", "NOP", "ADC", "ROR", "RRA",
-    "PLA", "ADC", "ROR", "ARR", "JMP", "ADC", "ROR", "RRA",
-    "BVS", "ADC", "KIL", "RRA", "NOP", "ADC", "ROR", "RRA",
-    "SEI", "ADC", "NOP", "RRA", "NOP", "ADC", "ROR", "RRA",
-    "NOP", "STA", "NOP", "SAX", "STY", "STA", "STX", "SAX",
-    "DEY", "NOP", "TXA", "XAA", "STY", "STA", "STX", "SAX",
-    "BCC", "STA", "KIL", "AHX", "STY", "STA", "STX", "SAX",
-    "TYA", "STA", "TXS", "TAS", "SHY", "STA", "SHX", "AHX",
-    "LDY", "LDA", "LDX", "LAX", "LDY", "LDA", "LDX", "LAX",
-    "TAY", "LDA", "TAX", "LAX", "LDY", "LDA", "LDX", "LAX",
-    "BCS", "LDA", "KIL", "LAX", "LDY", "LDA", "LDX", "LAX",
-    "CLV", "LDA", "TSX", "LAS", "LDY", "LDA", "LDX", "LAX",
-    "CPY", "CMP", "NOP", "DCP", "CPY", "CMP", "DEC", "DCP",
-    "INY", "CMP", "DEX", "AXS", "CPY", "CMP", "DEC", "DCP",
-    "BNE", "CMP", "KIL", "DCP", "NOP", "CMP", "DEC", "DCP",
-    "CLD", "CMP", "NOP", "DCP", "NOP", "CMP", "DEC", "DCP",
-    "CPX", "SBC", "NOP", "ISC", "CPX", "SBC", "INC", "ISC",
-    "INX", "SBC", "NOP", "SBC", "CPX", "SBC", "INC", "ISC",
-    "BEQ", "SBC", "KIL", "ISC", "NOP", "SBC", "INC", "ISC",
-    "SED", "SBC", "NOP", "ISC", "NOP", "SBC", "INC", "ISC",
-  };
-
-
   // Registers
   byte A; // Accumulator
   byte X;
@@ -166,10 +130,9 @@ public class Cpu {
     AddressMode mode = (AddressMode) addressModes[opCode];
 
     // Get address to operate on
-    ushort address;
+    ushort address = 0;
     switch (mode) {
       case AddressMode.Implied:
-        address = 0;
         break;
       case AddressMode.Immediate:
         address = (ushort) (PC + 1);
@@ -184,7 +147,6 @@ public class Cpu {
         address = (ushort) (_memory.read16((ushort) (PC + 1)) + Y);
         break;
       case AddressMode.Accumulator:
-        address = 0;
         break;
       case AddressMode.Relative:
         address = (ushort) (PC + (sbyte) _memory.read((ushort) (PC + 1)) + 2);
@@ -216,8 +178,6 @@ public class Cpu {
         // Target address (Must wrap to 0x00 if at 0xFF)
         address = (ushort) (_memory.read16WrapPage(valueAddress) + Y);
         break;
-      default:
-        throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
     }
     
     PC += (ushort) instructionSizes[opCode];
@@ -302,9 +262,6 @@ public class Cpu {
 
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
-    System.Console.WriteLine(_memory.read((ushort) 0x02));
-    System.Console.WriteLine(_memory.read((ushort) 0x03));
-
     throw new Exception("OpCode is not implemented");
   }
 
