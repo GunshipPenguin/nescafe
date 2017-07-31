@@ -154,13 +154,13 @@ public class Cpu {
   private void next() {
     byte opCode = _memory.read(PC);
 
-    System.Console.Write(PC.ToString("X4") + " " + opCode.ToString("X2") + "\t\t\t\t");
+    System.Console.Write(PC.ToString("X4") + "  " + opCode.ToString("X2") + "\t\t\t\t");
 
     System.Console.Write("A:" + A.ToString("X2") + " ");
     System.Console.Write("X:" + X.ToString("X2") + " ");
     System.Console.Write("Y:" + Y.ToString("X2") + " ");
     System.Console.Write("P:" + getStatusFlags().ToString("X2") + " ");
-    System.Console.Write("SP:" + S.ToString("X2") + " ");
+    System.Console.Write("SP:" + S.ToString("X2"));
     System.Console.Write("\n");
 
     AddressMode mode = (AddressMode) addressModes[opCode];
