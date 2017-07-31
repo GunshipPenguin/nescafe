@@ -202,7 +202,11 @@ public class Cpu {
         address = (ushort) _memory.read16IndirectBug((ushort) _memory.read16((ushort) (PC + 1)));
         break;
       case AddressMode.IndexedIndirect:
-        address = (ushort) (_memory.read16((ushort) (_memory.read((ushort) (PC + 1)) + X)));
+        // Zeropage address of lower nibble of target address (& 0xFF to wrap at 255)
+        ushort zpgAddress = (ushort) ((_memory.read((ushort) (PC + 1)) + X) & 0xFF);
+
+        // Full address
+        address = (ushort) _memory.read16IndirectBug((ushort) (zpgAddress));
         break;
       case AddressMode.IndirectIndexed:
         address = (ushort) (_memory.read16((ushort) (_memory.read((ushort) (PC + 1)))) + Y);
