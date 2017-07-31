@@ -409,7 +409,7 @@ public class Cpu {
     // the carry flag is cleared
     C = (A - data - notCarry) >= 0 ? true : false;
 
-    V = isBitSet((byte) ~(A ^ data), 7) && !isBitSet((byte) (A ^ result), 7);
+    V = ((A ^ data) & (A ^ result) & 0x80) != 0;
 
     A = result;
   }
