@@ -199,21 +199,22 @@ public class Cpu {
         address = (ushort) ((_memory.read((ushort) (PC+1)) + X) & 0xFF);
         break;
       case AddressMode.Indirect:
-        address = (ushort) _memory.read16IndirectBug((ushort) _memory.read16((ushort) (PC + 1)));
+        // Must wrap if at the end of a page to emulate a 6502 bug present in the JMP instruction
+        address = (ushort) _memory.read16WrapPage((ushort) _memory.read16((ushort) (PC + 1)));
         break;
       case AddressMode.IndexedIndirect:
         // Zeropage address of lower nibble of target address (& 0xFF to wrap at 255)
         ushort lowerNibbleAddress = (ushort) ((_memory.read((ushort) (PC + 1)) + X) & 0xFF);
 
-        // Full address
-        address = (ushort) _memory.read16IndirectBug((ushort) (lowerNibbleAddress));
+        // Target address (Must wrap to 0x00 if at 0xFF)
+        address = (ushort) _memory.read16WrapPage((ushort) (lowerNibbleAddress));
         break;
       case AddressMode.IndirectIndexed:
         // Zeropage address of the value to add the Y register to to get the target address
         ushort valueAddress = (ushort) _memory.read((ushort) (PC + 1));
 
-        // Value to add the Y register to to get the target address
-        address = (ushort) (_memory.read16IndirectBug(valueAddress) + Y);
+        // Target address (Must wrap to 0x00 if at 0xFF)
+        address = (ushort) (_memory.read16WrapPage(valueAddress) + Y);
         break;
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
