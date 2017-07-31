@@ -467,6 +467,7 @@ public class Cpu {
 
   void pla(AddressMode mode, ushort address) {
     A = pullStack();
+    setZn(A);
   }
 
   void php(AddressMode mode, ushort address) {
