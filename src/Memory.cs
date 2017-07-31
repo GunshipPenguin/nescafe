@@ -62,13 +62,6 @@ public class Memory {
     internalRam[addressIndex] = data;
   }
 
-  public void write16(ushort address, ushort data) {
-    byte hi = (byte) (data >> 8);
-    byte lo = (byte) (data & 0xFF);
-    write(address, hi);
-    write(address, lo);
-  }
-
   // Return the index in internalRam of the address (handle mirroring)
   private ushort handleInternalRamMirror(ushort address) {
     return (ushort) (address % 0x800);
