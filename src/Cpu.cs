@@ -203,10 +203,10 @@ public class Cpu {
         break;
       case AddressMode.IndexedIndirect:
         // Zeropage address of lower nibble of target address (& 0xFF to wrap at 255)
-        ushort zpgAddress = (ushort) ((_memory.read((ushort) (PC + 1)) + X) & 0xFF);
+        ushort lowerNibbleAddress = (ushort) ((_memory.read((ushort) (PC + 1)) + X) & 0xFF);
 
         // Full address
-        address = (ushort) _memory.read16IndirectBug((ushort) (zpgAddress));
+        address = (ushort) _memory.read16IndirectBug((ushort) (lowerNibbleAddress));
         break;
       case AddressMode.IndirectIndexed:
         // Zeropage address of the value to add the Y register to to get the target address
