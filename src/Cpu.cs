@@ -334,7 +334,6 @@ public class Cpu {
 
   void txs(AddressMode mode, ushort address) {
     S = X;
-    setZn(S);
   }
 
   void tsx(AddressMode mode, ushort address) {
