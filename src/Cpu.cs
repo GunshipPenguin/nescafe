@@ -434,7 +434,8 @@ public class Cpu {
 
   void eor(AddressMode mode, ushort address) {
     byte data = _memory.read(address);
-    A |= data;
+    A ^= data;
+    setZn(A);
   }
 
   void clv(AddressMode mode, ushort address) {
