@@ -471,7 +471,7 @@ public class Cpu {
   }
 
   void php(AddressMode mode, ushort address) {
-    pushStack(getStatusFlags());
+    pushStack((byte) (getStatusFlags() | 0x10));
   }
 
   void sed(AddressMode mode, ushort address) {
