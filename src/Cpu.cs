@@ -57,11 +57,49 @@ public class Cpu {
     2, 2, 0, 0, 2, 2, 2, 0, 1, 3, 1, 0, 3, 3, 3, 0,
   };
 
+  int[] instructionCycles = new int[256] {
+    7, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
+    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+    6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6,
+    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+    6, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 3, 4, 6, 6,
+    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+    6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 5, 4, 6, 6,
+    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+    2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,
+    2, 6, 2, 6, 4, 4, 4, 4, 2, 5, 2, 5, 5, 5, 5, 5,
+    2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,
+    2, 5, 2, 5, 4, 4, 4, 4, 2, 4, 2, 4, 4, 4, 4, 4,
+    2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
+    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+    2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
+    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+  };
+
+  int[] instructionPageCycles = new int[256] {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0,
+  };
+
   // Registers
-  byte A; // Accumulator
+  byte A;    // Accumulator
   byte X;
   byte Y;
-  byte S;
+  byte S;    // Stack Pointer
   ushort PC; // Program Counter (16 bits)
 
   // Status flag register (implemented as several booleans)
@@ -73,6 +111,7 @@ public class Cpu {
   bool V; // Overflow flag
   bool N; // Negative flag
 
+  int cycles;
 
   delegate void Instruction(AddressMode mode, ushort address);
   Instruction[] instructions;
@@ -87,6 +126,7 @@ public class Cpu {
     X = 0;
     Y = 0;
     setProcessorFlags((byte) 0x24);
+    cycles = 0;
 
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
@@ -124,13 +164,15 @@ public class Cpu {
     System.Console.Write("X:" + X.ToString("X2") + " ");
     System.Console.Write("Y:" + Y.ToString("X2") + " ");
     System.Console.Write("P:" + getStatusFlags().ToString("X2") + " ");
-    System.Console.Write("SP:" + S.ToString("X2"));
+    System.Console.Write("SP:" + S.ToString("X2") + " ");
+    System.Console.Write("cycles:" + cycles.ToString());
     System.Console.Write("\n");
 
     AddressMode mode = (AddressMode) addressModes[opCode];
 
     // Get address to operate on
     ushort address = 0;
+    bool pageCrossed = false;
     switch (mode) {
       case AddressMode.Implied:
         break;
@@ -142,9 +184,11 @@ public class Cpu {
         break;
       case AddressMode.AbsoluteX:
         address = (ushort) (_memory.read16((ushort) (PC + 1)) + X);
+        pageCrossed = isPageCross((ushort) (address - X), (ushort) X);
         break;
       case AddressMode.AbsoluteY:
         address = (ushort) (_memory.read16((ushort) (PC + 1)) + Y);
+        pageCrossed = isPageCross((ushort) (address - Y), (ushort) Y);
         break;
       case AddressMode.Accumulator:
         break;
@@ -177,10 +221,16 @@ public class Cpu {
 
         // Target address (Must wrap to 0x00 if at 0xFF)
         address = (ushort) (_memory.read16WrapPage(valueAddress) + Y);
+        pageCrossed = isPageCross((ushort) (address - Y), address);
         break;
     }
     
     PC += (ushort) instructionSizes[opCode];
+    cycles += instructionCycles[opCode];
+    
+    if (pageCrossed) {
+      cycles += instructionPageCycles[opCode];
+    }
     
     instructions[opCode](mode, address);
   }
@@ -258,6 +308,15 @@ public class Cpu {
     B = isBitSet(flags, 4);
     V = isBitSet(flags, 6);
     N = isBitSet(flags, 7);
+  }
+
+  private bool isPageCross(ushort a, ushort b) {
+    return (a & 0xFF) != (b & 0xFF);
+  }
+
+  private void handleBranchCycles(ushort origPc, ushort branchPc) {
+    cycles ++;
+    cycles += isPageCross(origPc, branchPc) ? 1 : 0; 
   }
 
   // INSTRUCTIONS FOLLOW
@@ -472,15 +531,24 @@ public class Cpu {
   }
 
   void bpl(AddressMode mode, ushort address) {
-    PC = !N ? address : PC;
+    if (!N) {
+      handleBranchCycles(PC, address);
+      PC = address;
+    }
   }
 
   void bvc(AddressMode mode, ushort address) {
-      PC = !V ? address : PC;
+    if (!V) {
+      handleBranchCycles(PC, address);
+      PC = address;
+    }
   }
 
   void bvs(AddressMode mode, ushort address) {
-    PC = V ? address : PC;
+    if (V) {
+      handleBranchCycles(PC, address);
+      PC = address;
+    }
   }
 
   void bit(AddressMode mode, ushort address) {
@@ -491,11 +559,17 @@ public class Cpu {
   }
 
   void bne(AddressMode mode, ushort address) {
-    PC = !Z ? address : PC;
+    if (!Z) {
+      handleBranchCycles(PC, address);
+      PC = address;
+    }
   }
 
   void beq(AddressMode mode, ushort address) {
-    PC = Z ? address : PC;
+    if (Z) {
+      handleBranchCycles(PC, address);
+      PC = address;
+    }
   }
 
   void clc(AddressMode mode, ushort address) {
@@ -503,11 +577,17 @@ public class Cpu {
   }
 
   void bcc(AddressMode mode, ushort address) {
-    PC = !C ? address : PC;
+    if (!C) {
+      handleBranchCycles(PC, address);
+      PC = address;
+    }
   }
 
   void bcs(AddressMode mode, ushort address) {
-    PC = C ? address : PC;
+    if (C) {
+      handleBranchCycles(PC, address);
+      PC = address;
+    }
   }
 
   void sec(AddressMode mode, ushort address) {
