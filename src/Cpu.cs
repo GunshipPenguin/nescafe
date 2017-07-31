@@ -442,7 +442,7 @@ public class Cpu {
   }
 
   void bmi(AddressMode mode, ushort address) {
-    PC = Z ? address : PC;
+    PC = N ? address : PC;
   }
 
   void plp(AddressMode mode, ushort address) {
