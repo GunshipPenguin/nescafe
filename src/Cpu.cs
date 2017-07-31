@@ -619,7 +619,7 @@ public class Cpu {
 
       _memory.write(address, data);
 
-      setZn(A);
+      setZn(data);
     }
   }
 
