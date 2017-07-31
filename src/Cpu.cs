@@ -209,7 +209,11 @@ public class Cpu {
         address = (ushort) _memory.read16IndirectBug((ushort) (zpgAddress));
         break;
       case AddressMode.IndirectIndexed:
-        address = (ushort) (_memory.read16((ushort) (_memory.read((ushort) (PC + 1)))) + Y);
+        // Zeropage address of the value to add the Y register to to get the target address
+        ushort valueAddress = (ushort) _memory.read((ushort) (PC + 1));
+
+        // Value to add the Y register to to get the target address
+        address = (ushort) (_memory.read16IndirectBug(valueAddress) + Y);
         break;
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
