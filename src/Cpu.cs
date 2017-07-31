@@ -122,7 +122,7 @@ public class Cpu {
     A = 0;
     X = 0;
     Y = 0;
-    setProcessorFlags((byte) 0x34);
+    setProcessorFlags((byte) 0x24);
 
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
