@@ -149,17 +149,14 @@ public class Cpu {
   private void next() {
     byte opCode = _memory.read(PC);
 
-    System.Console.Write("( ");
-    System.Console.Write("A: " + A.ToString("X2") + " ");
-    System.Console.Write("X: " + X.ToString("X2") + " ");
-    System.Console.Write("Y: " + Y.ToString("X2") + " ");
-    System.Console.Write("SP: " + S.ToString("X2") + " ");
-    System.Console.Write(")    ");
+    System.Console.Write(PC.ToString("X4") + " " + opCode.ToString("X2") + "\t\t\t\t");
 
-    System.Console.Write(PC.ToString("X4") + " ");
-    System.Console.Write(opCode.ToString("X2") + " ");
-    System.Console.Write(instructionNames[opCode]);
-    System.Console.Write("  ");
+    System.Console.Write("A:" + A.ToString("X2") + " ");
+    System.Console.Write("X:" + X.ToString("X2") + " ");
+    System.Console.Write("Y:" + Y.ToString("X2") + " ");
+    System.Console.Write("P:" + getStatusFlags().ToString("X2") + " ");
+    System.Console.Write("SP:" + S.ToString("X2") + " ");
+    System.Console.Write("\n");
 
     AddressMode mode = (AddressMode) addressModes[opCode];
 
@@ -171,42 +168,33 @@ public class Cpu {
         break;
       case AddressMode.Immediate:
         address = (ushort) (PC + 1);
-        System.Console.Write("#" + address.ToString("X2"));
         break;
       case AddressMode.Absolute:
         address = _memory.read16((ushort) (PC + 1));
-        System.Console.Write("$" + address.ToString("X4"));
         break;
       case AddressMode.AbsoluteX:
         address = (ushort) (_memory.read16((ushort) (PC + 1)) + X);
-        System.Console.Write("$" + address.ToString("X4") + " + X");
         break;
       case AddressMode.AbsoluteY:
         address = (ushort) (_memory.read16((ushort) (PC + 1)) + Y);
-        System.Console.Write("$" + address.ToString("X4") + " + Y");
         break;
       case AddressMode.Accumulator:
         address = 0;
-        System.Console.Write("A");
         break;
       case AddressMode.Relative:
         address = (ushort) (PC + (sbyte) _memory.read((ushort) (PC + 1)) + 2);
         break;
       case AddressMode.ZeroPage:
         address = _memory.read((ushort) (PC + 1));
-        System.Console.Write("$" + address.ToString("X2"));
         break;
       case AddressMode.ZeroPageY:
         address = (ushort) (_memory.read((ushort) (PC+1)) + Y);
-        System.Console.Write("$" + address.ToString("X2") + " + Y");
         break;
       case AddressMode.ZeroPageX:
         address = (ushort) (_memory.read((ushort) (PC+1)) + X);
-        System.Console.Write("$" + address.ToString("X2") + " + X");
         break;
       case AddressMode.Indirect:
         address = (ushort) _memory.read16IndirectBug((ushort) _memory.read16((ushort) (PC + 1)));
-        System.Console.Write("$(" + _memory.read16(((ushort) (PC + 1))).ToString("X4") + ")=" + address.ToString("X4"));
         break;
       case AddressMode.IndexedIndirect:
         address = (ushort) (_memory.read16((ushort) (_memory.read((ushort) (PC + 1)) + X)));
@@ -217,8 +205,6 @@ public class Cpu {
       default:
         throw new Exception("Address mode not implemented for 0x" + opCode.ToString("X2"));
     }
-
-    System.Console.Write("\n");
     
     PC += (ushort) instructionSizes[opCode];
     
@@ -302,6 +288,9 @@ public class Cpu {
 
   // INSTRUCTIONS FOLLOW
   void ___(AddressMode mode, ushort address) {
+    System.Console.WriteLine(_memory.read((ushort) 0x02));
+    System.Console.WriteLine(_memory.read((ushort) 0x03));
+
     throw new Exception("OpCode is not implemented");
   }
 
