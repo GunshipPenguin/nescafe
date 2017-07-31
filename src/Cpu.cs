@@ -455,7 +455,7 @@ public class Cpu {
 
   void cmp(AddressMode mode, ushort address) {
     byte data = _memory.read(address);
-    C = A > data;
+    C = A >= data;
     setZn((byte) (A - data));
   }
 
