@@ -1,7 +1,7 @@
 using System;
 
 public class Cpu {
-  Memory _memory;
+  CpuMemory _memory;
 
   enum AddressMode {
     Absolute=1,      // 1
@@ -116,8 +116,8 @@ public class Cpu {
   delegate void Instruction(AddressMode mode, ushort address);
   Instruction[] instructions;
 
-  public Cpu(Memory memory) {
-    _memory = memory;
+  public Cpu(Console console) {
+    _memory = console.cpuMemory;
     PC = 0xC000;
 
     // Set up startup state

@@ -1,12 +1,12 @@
 using System;
 
 public class Console {
-  Cpu cpu;
-  public Memory memory;
+  public Cpu cpu;
+  public CpuMemory cpuMemory;
 
   public Console(Cartridge cartridge) {
-    memory = new Memory(cartridge);
-    cpu = new Cpu(memory);
+    cpuMemory = new CpuMemory(cartridge);
+    cpu = new Cpu(this);
   }
 
   public void start() {
