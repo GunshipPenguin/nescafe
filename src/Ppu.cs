@@ -54,7 +54,7 @@ public class Ppu {
   }
 
   public void writePpuStatus(byte data) {
-
+    throw new NotImplementedException();
   }
 
   public void writeOamAddr(byte data) {
@@ -62,22 +62,34 @@ public class Ppu {
   }
 
   public void writeOamData(byte data) {
-
+    throw new NotImplementedException();
   }
 
   public void writePpuScroll(byte data) {
-
+    throw new NotImplementedException();
   }
 
   public void writePpuAddr(byte data) {
-    
+    throw new NotImplementedException();
   }
 
   public void writePpuData(byte data) {
-
+    throw new NotImplementedException();
   }
 
   public void writeOamDma(byte data) {
+    throw new NotImplementedException();
+  }
 
+  public byte readPpuStatus() {
+    throw new NotImplementedException();
+  }
+
+  public byte readOamData() {
+    throw new NotImplementedException();
+  }
+
+  public byte readPpuData() {
+    throw new NotImplementedException();
   }
 }

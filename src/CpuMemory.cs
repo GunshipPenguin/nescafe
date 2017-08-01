@@ -47,18 +47,34 @@ public class CpuMemory : Memory {
     }
   }
 
-  public override byte read(ushort address) {
-    if (address > 0x1FFF && address < 0x4020) {
-      throw new NotImplementedException();
+  private byte readPpuRegister(ushort address) {
+    ushort registerAddress = (byte) (0x2000 + ((address - 0x2000) % 8));
+    byte data;
+    switch (registerAddress) {
+      case 0x2002: data = console.ppu.readPpuStatus();
+        break;
+      case 0x2004: data = console.ppu.readOamData();
+        break;
+      case 0x2007: data = console.ppu.readPpuData();
+        break;
+      default:
+        throw new Exception("Invalid PPU Register read from register: " + registerAddress.ToString("X4"));
     }
 
-    byte data;
+    return data;
+  }
 
-    if (address < 0x1FFF) {
+  public override byte read(ushort address) {
+    byte data;
+    if (address < 0x2000) { // Internal CPU RAM 
       ushort addressIndex = handleInternalRamMirror(address);
       data = internalRam[addressIndex];
-    } else {
+    } else if (address < 0x1FF9) { // PPU Registers
+      data = readPpuRegister(address);
+    } else if (address >= 0x4020) { // Program ROM
       data = mapper.readAddress(address);
+    } else {
+      throw new NotImplementedException("Invalid CPU Memory Read from address: " + address.ToString("X4"));
     }
 
     return data;
