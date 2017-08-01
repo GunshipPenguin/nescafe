@@ -6,8 +6,8 @@ public class CpuMemory : Memory {
 
   Mapper mapper;
 
-  public CpuMemory(Cartridge cartridge) {
-    mapper = new Nrom128Mapper(cartridge);
+  public CpuMemory(Console console) {
+    mapper = new Nrom128Mapper(console.cartridge);
   }
 
   public override void write(ushort address, byte data) {
