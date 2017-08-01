@@ -69,6 +69,10 @@ public class Ppu {
 
   }
 
+  public void writePpuAddr(byte data) {
+    
+  }
+
   public void writePpuData(byte data) {
 
   }

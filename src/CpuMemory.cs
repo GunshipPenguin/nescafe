@@ -18,6 +18,8 @@ public class CpuMemory : Memory {
       internalRam[addressIndex] = data;
     } else if (address < 0x1FF9) { // PPU Registers
       writePpuRegister(address, data);
+    } else if (address == 0x4014) {
+      console.ppu.writeOamDma(data);  
     } else {
       throw new NotImplementedException("Invalid CPU Memory Write to address: " + address.ToString("X4"));
     }
@@ -40,7 +42,7 @@ public class CpuMemory : Memory {
         break;
       case 0x2006: console.ppu.writePpuData(data);
         break;
-      case 0x2007: console.ppu.writeOamDma(data);
+      case 0x2007: console.ppu.writePpuData(data);
         break;
     }
   }
