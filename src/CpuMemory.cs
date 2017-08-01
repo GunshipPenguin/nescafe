@@ -32,8 +32,6 @@ public class CpuMemory : Memory {
         break;
       case 0x2001: console.ppu.writePpuMask(data);
         break;
-      case 0x2002: console.ppu.writePpuStatus(data);
-        break;
       case 0x2003: console.ppu.writeOamAddr(data);
         break;
       case 0x2004: console.ppu.writeOamData(data);
@@ -44,6 +42,8 @@ public class CpuMemory : Memory {
         break;
       case 0x2007: console.ppu.writePpuData(data);
         break;
+      default:
+        throw new Exception("Invalid PPU Register write to register: " + registerAddress.ToString("X4"));
     }
   }
 

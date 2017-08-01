@@ -52,11 +52,7 @@ public class Ppu {
     flagEmphasizeGreen = (byte) ((data >> 6) & 1);
     flagEmphasizeBlue = (byte) ((data >> 7) & 1);
   }
-
-  public void writePpuStatus(byte data) {
-    throw new NotImplementedException();
-  }
-
+  
   public void writeOamAddr(byte data) {
     oamAddr = data;
   }
