@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 public class Console {
   public Cpu cpu;
@@ -10,7 +11,7 @@ public class Console {
 
   public Cartridge cartridge;
 
-  public Action<Bitmap> drawAction;
+  public Action<byte[]> drawAction;
 
   public Console(Cartridge cartridge) {
     this.cartridge = cartridge;
@@ -23,6 +24,8 @@ public class Console {
   }
 
   public void start() {
-    cpu.start();
+    byte[] bitmapData = ppu.BitmapData;
+    drawAction(ppu.getScreen());
+    // cpu.start();
   }
 }

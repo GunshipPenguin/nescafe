@@ -1,6 +1,13 @@
 using System;
 
 public class Ppu {
+  private byte[] bitmapData;
+  public byte[] BitmapData {
+    get {
+      return bitmapData;
+    }
+  }
+
   CpuMemory _cpuMemory;
   PpuMemory _memory;
 
@@ -29,6 +36,11 @@ public class Ppu {
   public Ppu(Console console) {
     _cpuMemory = console.cpuMemory;
     _memory = console.ppuMemory;
+    bitmapData = new byte[256 * 240]; // 720x486 for a NTSC PPU
+  }
+
+  public byte[] getScreen() {
+    return bitmapData;
   }
 
   public void writePpuCtrl(byte data) {

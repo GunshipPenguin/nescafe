@@ -5,7 +5,7 @@
     "tasks": [
         {
             "taskName": "build",
-            "command": "mcs -debug -r:System.Windows.Forms.dll -r:System.Drawing.dll -out:emulator.exe src/*.cs",
+            "command": "mcs -debug -unsafe -r:System.Windows.Forms.dll -r:System.Drawing.dll -out:emulator.exe src/*.cs",
             "type": "shell",
             "problemMatcher": [
                 "$msCompile"
