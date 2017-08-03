@@ -26,7 +26,6 @@ public class Ppu {
   // OAMADDR Register
   byte oamAddr;
 
-
   public Ppu(Console console) {
     _cpuMemory = console.cpuMemory;
     _memory = console.ppuMemory;
@@ -52,7 +51,7 @@ public class Ppu {
     flagEmphasizeGreen = (byte) ((data >> 6) & 1);
     flagEmphasizeBlue = (byte) ((data >> 7) & 1);
   }
-  
+
   public void writeOamAddr(byte data) {
     oamAddr = data;
   }

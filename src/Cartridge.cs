@@ -24,10 +24,15 @@ public class Cartridge {
     BinaryReader reader = new BinaryReader(stream);
     parseHeader(reader);
     loadPrgRom(reader);
+    loadChrRom(reader);
   }
 
   public byte readPrgRom(ushort address) {
     return prgRom[address];
+  }
+
+  public byte readChrRom(ushort address) {
+    return chrRom[address];
   }
 
   private void loadPrgRom(BinaryReader reader) {
@@ -38,6 +43,11 @@ public class Cartridge {
 
     prgRom = new byte[prgRomSize];
     reader.Read(prgRom, 0, prgRomSize);
+  }
+
+  private void loadChrRom(BinaryReader reader) {
+    chrRom = new byte[chrRomSize];
+    reader.Read(chrRom, 0, chrRomSize);
   }
 
   private void parseHeader(BinaryReader reader) {

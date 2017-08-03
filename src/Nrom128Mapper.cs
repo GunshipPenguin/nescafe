@@ -11,18 +11,12 @@ class Nrom128Mapper : Mapper {
   }
 
   public override byte readAddress(ushort address) {
-    if (address < 0x8000 || address > 0xFFFF) {
+    if (address < 0x2000) {
+      return _cartridge.readChrRom(address);
+    } else if (address > 0x8000) {
+      return _cartridge.readPrgRom(addressToPrgRomIndex(address));
+    } else {
       throw new Exception("Invalid mapper read");
     }
-
-    return _cartridge.readPrgRom(addressToPrgRomIndex(address));
-  }
-
-  public override void writeAddress(ushort address, byte data) {
-    if (address < 0x8000 || address > 0xFFFF) {
-      throw new Exception("Invalid mapper write");
-    }
-
-
   }
 }
