@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 
 public class Console {
   public Cpu cpu;
@@ -8,6 +9,8 @@ public class Console {
   public PpuMemory ppuMemory;
 
   public Cartridge cartridge;
+
+  public Action<Bitmap> drawAction;
 
   public Console(Cartridge cartridge) {
     this.cartridge = cartridge;
