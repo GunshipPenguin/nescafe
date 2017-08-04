@@ -11,6 +11,17 @@ public class Ppu {
   CpuMemory _cpuMemory;
   PpuMemory _memory;
 
+  // Pixel position information
+  int scanline;
+  int pixelX;
+
+  // Last value written to a PPU register
+  byte lastRegisterWrite;
+
+  // Sprite related flags
+  byte flagSpriteOverflow;
+  byte flagSprite0Hit;
+
   // PPUCTRL Register flags
   byte flagBaseNameTableAddr;
   byte flagVRamIncrement;
@@ -60,6 +71,7 @@ public class Ppu {
   }
 
   public void writeToRegister(ushort address, byte data) {
+    lastRegisterWrite = data;
     switch (address) {
       case 0x2000: writePpuCtrl(data);
         break;
@@ -126,7 +138,13 @@ public class Ppu {
   }
 
   byte readPpuStatus() {
-    throw new NotImplementedException();
+    byte retVal = 0;
+    retVal |= (byte) (lastRegisterWrite & 0x1F); // Least signifigant 5 bits of last register write
+    retVal |= (byte) (flagSpriteOverflow << 5);
+    retVal |= (byte) (flagSprite0Hit << 6);
+    retVal |= (byte) ((scanline > 240 ? 1 : 0) << 7);
+
+    return retVal;
   }
 
   byte readOamData() {
