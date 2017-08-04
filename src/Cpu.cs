@@ -149,13 +149,8 @@ public class Cpu {
     };
   }
 
-  public void start() {
-    while (true) {
-      next();
-    }
-  }
-
-  private void next() {
+  public int step() {
+    int cyclesOrig = cycles;
     byte opCode = _memory.read(PC);
 
     System.Console.Write(PC.ToString("X4") + "  " + opCode.ToString("X2") + "\t\t\t\t");
@@ -233,6 +228,8 @@ public class Cpu {
     }
     
     instructions[opCode](mode, address);
+
+    return cycles - cyclesOrig;
   }
 
   private void setZn(byte value) {

@@ -26,6 +26,14 @@ public class Console {
   public void start() {
     byte[] bitmapData = ppu.BitmapData;
     drawAction(ppu.getScreen());
-    cpu.start();
+
+    while (true) {
+      int cycles = cpu.step();
+
+      // 3 PPU cycles for each CPU cycle
+      for (int i=0;i<cycles*3;i++) {
+        ppu.step();
+      }
+    }
   }
 }

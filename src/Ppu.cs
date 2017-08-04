@@ -53,6 +53,10 @@ public class Ppu {
     oam = new byte[256];
   }
 
+  public void step() {
+    // TODO, implement this
+  }
+
   public byte[] getScreen() {
     return bitmapData;
   }
