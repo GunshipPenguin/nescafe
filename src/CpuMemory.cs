@@ -34,7 +34,7 @@ public class CpuMemory : Memory {
     if (address < 0x2000) { // Internal CPU RAM 
       ushort addressIndex = handleInternalRamMirror(address);
       data = internalRam[addressIndex];
-    } else if (address < 0x1FF9) { // PPU Registers
+    } else if (address < 0x2008 || address == 0x4014) { // PPU Registers
       data = readPpuRegister(address);
     } else if (address >= 0x4020) { // Program ROM
       data = mapper.readAddress(address);
@@ -49,7 +49,7 @@ public class CpuMemory : Memory {
     if (address < 0x2000) { // Internal CPU RAM 
       ushort addressIndex = handleInternalRamMirror(address);
       internalRam[addressIndex] = data;
-    } else if (address < 0x1FF9 || address == 0x4014) { // PPU Registers
+    } else if (address < 0x2008 || address == 0x4014) { // PPU Registers
       writePpuRegister(address, data);
     } else {
       throw new NotImplementedException("Invalid CPU Memory Write to address: " + address.ToString("X4"));
