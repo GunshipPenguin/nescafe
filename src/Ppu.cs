@@ -43,7 +43,44 @@ public class Ppu {
     return bitmapData;
   }
 
-  public void writePpuCtrl(byte data) {
+  public byte readFromRegister(ushort address) {
+    byte data;
+    switch (address) {
+      case 0x2002: data = readPpuStatus();
+        break;
+      case 0x2004: data = readOamData();
+        break;
+      case 0x2007: data = readPpuData();
+        break;
+      default:
+        throw new Exception("Invalid PPU Register read from register: " + address.ToString("X4"));
+    }
+
+    return data;
+  }
+
+  public void writeToRegister(ushort address, byte data) {
+    switch (address) {
+      case 0x2000: writePpuCtrl(data);
+        break;
+      case 0x2001: writePpuMask(data);
+        break;
+      case 0x2003: writeOamAddr(data);
+        break;
+      case 0x2004: writeOamData(data);
+        break;
+      case 0x2005: writePpuScroll(data);
+        break;
+      case 0x2006: writePpuData(data);
+        break;
+      case 0x2007: writePpuData(data);
+        break;
+      default:
+        throw new Exception("Invalid PPU Register write to register: " + address.ToString("X4"));
+    }
+  }
+  
+  void writePpuCtrl(byte data) {
     flagBaseNameTableAddr = (byte) (data & 0x3);
     flagVRamIncrement = (byte) ((data >> 2) & 1);
     flagPatternTableAddr = (byte) ((data >> 3) & 1);
@@ -53,7 +90,7 @@ public class Ppu {
     flagVBlankNmi = (byte) ((data >> 7) & 1);
   }
 
-  public void writePpuMask(byte data) {
+  void writePpuMask(byte data) {
     flagGreyscale = (byte) (data & 1);
     flagShowBackgroundLeft = (byte) ((data >> 1) & 1);
     flagShowSpritesLeft = (byte) ((data >> 2) & 1);
@@ -64,39 +101,39 @@ public class Ppu {
     flagEmphasizeBlue = (byte) ((data >> 7) & 1);
   }
 
-  public void writeOamAddr(byte data) {
+  void writeOamAddr(byte data) {
     oamAddr = data;
   }
 
-  public void writeOamData(byte data) {
+  void writeOamData(byte data) {
     throw new NotImplementedException();
   }
 
-  public void writePpuScroll(byte data) {
+  void writePpuScroll(byte data) {
     throw new NotImplementedException();
   }
 
-  public void writePpuAddr(byte data) {
+  void writePpuAddr(byte data) {
     throw new NotImplementedException();
   }
 
-  public void writePpuData(byte data) {
+  void writePpuData(byte data) {
     throw new NotImplementedException();
   }
 
-  public void writeOamDma(byte data) {
+  void writeOamDma(byte data) {
     throw new NotImplementedException();
   }
 
-  public byte readPpuStatus() {
+  byte readPpuStatus() {
     throw new NotImplementedException();
   }
 
-  public byte readOamData() {
+  byte readOamData() {
     throw new NotImplementedException();
   }
 
-  public byte readPpuData() {
+  byte readPpuData() {
     throw new NotImplementedException();
   }
 }
