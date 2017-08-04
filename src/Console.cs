@@ -26,6 +26,6 @@ public class Console {
   public void start() {
     byte[] bitmapData = ppu.BitmapData;
     drawAction(ppu.getScreen());
-    // cpu.start();
+    cpu.start();
   }
 }
