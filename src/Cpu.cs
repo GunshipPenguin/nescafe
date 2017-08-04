@@ -118,9 +118,9 @@ public class Cpu {
 
   public Cpu(Console console) {
     _memory = console.cpuMemory;
-    PC = 0xC000;
 
     // Set up startup state
+    PC = _memory.read16(0xFFFC);
     S = 0xFD;
     A = 0;
     X = 0;
