@@ -11,6 +11,10 @@ public class Ppu {
   CpuMemory _cpuMemory;
   PpuMemory _memory;
 
+  // OAM
+  byte[] oam;
+  ushort oamAddr;
+
   // Pixel position information
   int scanline;
   int pixelX;
@@ -41,13 +45,12 @@ public class Ppu {
   byte flagEmphasizeGreen;
   byte flagEmphasizeBlue;
 
-  // OAMADDR Register
-  byte oamAddr;
-
   public Ppu(Console console) {
     _cpuMemory = console.cpuMemory;
     _memory = console.ppuMemory;
-    bitmapData = new byte[256 * 240]; // 720x486 for a NTSC PPU
+    bitmapData = new byte[256 * 240];
+
+    oam = new byte[256];
   }
 
   public byte[] getScreen() {
@@ -118,7 +121,8 @@ public class Ppu {
   }
 
   void writeOamData(byte data) {
-    throw new NotImplementedException();
+    oam[oamAddr] = data;
+    oamAddr ++;
   }
 
   void writePpuScroll(byte data) {
@@ -148,7 +152,7 @@ public class Ppu {
   }
 
   byte readOamData() {
-    throw new NotImplementedException();
+    return oam[oamAddr];
   }
 
   byte readPpuData() {
