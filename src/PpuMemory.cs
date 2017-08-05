@@ -20,6 +20,10 @@ public class PpuMemory : Memory {
   }
 
   public override void write(ushort address, byte data) {
-    throw new NotImplementedException();
+    if (address < 0x2FFF) { // Internal vRam
+      vRam[address] = data;
+    } else {
+      throw new Exception("Invalid PPU Memory read at address: " + address.ToString("x4"));
+    }
   }
 }
