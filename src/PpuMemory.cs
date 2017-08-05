@@ -11,7 +11,7 @@ public class PpuMemory : Memory {
 
   public override byte read(ushort address) {
     if (address < 0x2000) { // CHR ROM pattern tables
-      return console.ppuMemory.read(address);
+      return console.cartridge.readChrRom(address);
     } else if (address <= 0x2FFF) { // Internal vRam
       return vRam[address - 0x2000];
     } else {

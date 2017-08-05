@@ -23,6 +23,10 @@ public class Console {
     ppu = new Ppu(this);
   }
 
+  public void drawFrame() {
+    drawAction(ppu.getScreen());
+  }
+
   public void start() {
     byte[] bitmapData = ppu.BitmapData;
     drawAction(ppu.getScreen());

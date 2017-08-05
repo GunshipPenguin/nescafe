@@ -10,6 +10,7 @@ public class Ppu {
 
   CpuMemory _cpuMemory;
   PpuMemory _memory;
+  Console _console;
 
   // OAM
   byte[] oam;
@@ -54,6 +55,7 @@ public class Ppu {
   public Ppu(Console console) {
     _cpuMemory = console.cpuMemory;
     _memory = console.ppuMemory;
+    _console = console;
     bitmapData = new byte[256 * 240];
 
     expectingPpuAddrLo = false;
@@ -64,8 +66,33 @@ public class Ppu {
     oam = new byte[256];
   }
 
+  // Gets the CHR of the current background pixel as specified in nametablebyte
+  private byte fetchBackgroundPattern(int x, int y) {
+    int patternX = x % 8;
+    int patternY = y % 8;
+
+    // Load base pattern table address
+    ushort patternAddress = (ushort) (flagBgPatternTableAddr == 0 ? 0x0000 : 0x1000);
+    patternAddress += (ushort) (nameTableByte);
+
+    // Fetch low and high byte
+    byte loByte = _memory.read((ushort) (patternAddress + patternY));
+    byte hiByte = _memory.read((ushort) (patternAddress + patternY + 8));
+
+    // Get lo and hi bits
+    byte loBit = (byte) (loByte >> patternX);
+    byte hiBit = (byte) (loByte >> patternX);
+
+    // Return lower 2 bits of color (TODO: Add attribute table lookup for full color)
+    return (byte) (((hiBit << 1) | loBit) & 0x03);
+  }
+
   private void renderPixel() {
-    // TODO Implement drawing
+    int pixelX = cycle;
+    int pixelY = scanline;
+
+    byte lowerTwoBits = fetchBackgroundPattern(pixelX, pixelY);
+    bitmapData[pixelY * 240 + pixelX] = lowerTwoBits;
   }
 
   private void fetchNameTableByte() {
@@ -128,6 +155,7 @@ public class Ppu {
       if (scanline == 260) { // Last scanline, reset to upper left corner
         scanline = 0;
         cycle = 0;
+        _console.drawFrame();
       } else { // Not on last scanline
         cycle = 0;
         scanline ++;
