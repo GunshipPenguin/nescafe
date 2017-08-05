@@ -12,7 +12,7 @@ public class PpuMemory : Memory {
   public override byte read(ushort address) {
     if (address < 0x2000) { // CHR ROM pattern tables
       return console.ppuMemory.read(address);
-    } else if (address < 0x2000) { // Internal vRam
+    } else if (address < 0x2FFF) { // Internal vRam
       return vRam[address];
     } else {
       throw new Exception("Invalid PPU Memory read at address: " + address.ToString("x4"));
