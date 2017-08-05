@@ -1,13 +1,13 @@
 using System;
 
-class Nrom128Mapper : Mapper {
-
-  public Nrom128Mapper(Cartridge cartridge) {
+class NromMapper : Mapper {
+  public NromMapper(Cartridge cartridge) {
     _cartridge = cartridge;
   }
 
   private ushort addressToPrgRomIndex(ushort address) {
-    return (ushort) ((address - 0x8000) % 16384); // Rom maps start at address 0x8000, 0xC000-0xFFFF is a mirror of 0x8000-0xBFFF
+    ushort mappedAddress = (ushort) (address - 0x8000); // PRG banks start at 0x8000
+    return _cartridge.prgRomBanks == 1 ? (ushort) (mappedAddress % 16384) : mappedAddress; // Wrap if only 1 PRG bank
   }
 
   public override byte readAddress(ushort address) {

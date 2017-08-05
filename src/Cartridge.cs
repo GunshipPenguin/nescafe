@@ -10,8 +10,8 @@ public class Cartridge {
   byte[] prgRom;
   byte[] chrRom;
 
-  int prgRomSize;
-  int chrRomSize;
+  public int prgRomBanks;
+  public int chrRomBanks;
 
   int prgRamSize;
 
@@ -41,13 +41,13 @@ public class Cartridge {
 
     reader.BaseStream.Seek(prgRomOffset, SeekOrigin.Begin);
 
-    prgRom = new byte[prgRomSize];
-    reader.Read(prgRom, 0, prgRomSize);
+    prgRom = new byte[prgRomBanks * 16384];
+    reader.Read(prgRom, 0, prgRomBanks * 16384);
   }
 
   private void loadChrRom(BinaryReader reader) {
-    chrRom = new byte[chrRomSize];
-    reader.Read(chrRom, 0, chrRomSize);
+    chrRom = new byte[chrRomBanks * 8192];
+    reader.Read(chrRom, 0, chrRomBanks * 8192);
   }
 
   private void parseHeader(BinaryReader reader) {
@@ -58,10 +58,10 @@ public class Cartridge {
     }
 
     // Size of PRG ROM
-    prgRomSize = reader.ReadByte() * 16384; // x * 16 KiB
+    prgRomBanks = reader.ReadByte();
 
     // Size of CHR ROM
-    chrRomSize = reader.ReadByte() * 8192; // x * 8 KiB
+    chrRomBanks = reader.ReadByte();
 
     // Flags 6
     flags6 = reader.ReadByte();

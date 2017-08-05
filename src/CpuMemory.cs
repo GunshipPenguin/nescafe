@@ -8,7 +8,7 @@ public class CpuMemory : Memory {
   Console console;
 
   public CpuMemory(Console console) {
-    mapper = new Nrom128Mapper(console.cartridge);
+    mapper = new NromMapper(console.cartridge);
     this.console = console;
   }
 
@@ -39,7 +39,8 @@ public class CpuMemory : Memory {
     } else if (address >= 0x4020) { // Program ROM
       data = mapper.readAddress(address);
     } else {
-      throw new NotImplementedException("Invalid CPU Memory Read from address: " + address.ToString("X4"));
+      data = 0;
+      System.Console.WriteLine("Invalid CPU Memory Read from address: " + address.ToString("X4"));
     }
 
     return data;
@@ -52,7 +53,7 @@ public class CpuMemory : Memory {
     } else if (address < 0x2008 || address == 0x4014) { // PPU Registers
       writePpuRegister(address, data);
     } else {
-      throw new NotImplementedException("Invalid CPU Memory Write to address: " + address.ToString("X4"));
+      System.Console.WriteLine("Invalid CPU Memory Write to address: " + address.ToString("X4"));
     }
   }
 }
