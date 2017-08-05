@@ -13,7 +13,7 @@ class NromMapper : Mapper {
   public override byte readAddress(ushort address) {
     if (address < 0x2000) {
       return _cartridge.readChrRom(address);
-    } else if (address > 0x8000) {
+    } else if (address >= 0x8000) {
       return _cartridge.readPrgRom(addressToPrgRomIndex(address));
     } else {
       throw new Exception("Invalid mapper read");

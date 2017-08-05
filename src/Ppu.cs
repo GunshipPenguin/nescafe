@@ -15,9 +15,11 @@ public class Ppu {
   byte[] oam;
   ushort oamAddr;
 
-  // Pixel position information
   int scanline;
-  int pixelX;
+  int cycle;
+
+  // Current nametable byte
+  byte nameTableByte;
 
   // Last value written to a PPU register
   byte lastRegisterWrite;
@@ -56,11 +58,81 @@ public class Ppu {
 
     expectingPpuAddrLo = false;
 
+    scanline = 0;
+    cycle = 0;
+
     oam = new byte[256];
   }
 
+  private void renderPixel() {
+    // TODO Implement drawing
+  }
+
+  private void fetchNameTableByte() {
+    ushort address;
+
+    // Set location to base location initially
+    switch (flagBaseNameTableAddr) {
+      case 0: address = 0x2000;
+        break;
+      case 1: address = 0x2400;
+        break;
+      case 2: address = 0x2800;
+        break;
+      case 3: address = 0x2C00;
+        break;
+      default:
+        throw new Exception("Invalid base nametable address");
+    }
+
+    int pixelX = cycle;
+    int pixelY = scanline;
+
+    // Tiles are 8x8 pixels
+    int tileX = pixelX / 8; 
+    int tileY = pixelY / 8;
+
+    address += (ushort) ((240 * tileY + tileX) / 8);
+    nameTableByte = _memory.read(address);
+  }
+
   public void step() {
-    // TODO, implement this
+    // System.Console.Write("scanline:" + scanline.ToString() + " ");
+    // System.Console.Write("cycle:" + cycle.ToString());
+    // System.Console.Write("\n");
+
+    if (scanline == 0) {  // Do nothing, dummy scanline
+
+    } else if (scanline >= 1 && scanline <= 240) { // Rendering scanlines
+      if (cycle == 0) { // Do nothing, idle cycle
+
+      } else if (cycle >= 1 && cycle <= 256) {
+        if (cycle % 8 == 0) { // Fetch new rendering information if needed
+          fetchNameTableByte();
+        }
+        
+        renderPixel();
+      } else { // Cycles that fetch data for next scanline
+        // TODO Implement fetching of data for next scanline
+      }
+    } else if (scanline > 240 && scanline < 260) { // Memory fetch scanlines
+      // TODO Add memory fetch stuff here
+    } else if (scanline == 260) { // Vblank, next frame
+      // TODO Add vblank stuff here
+    }
+
+    // Increment cycle and scanline if cycle == 340
+    // Also set to next frame if at end of last scanline
+    cycle ++;
+    if (cycle == 340) {
+      if (scanline == 260) { // Last scanline, reset to upper left corner
+        scanline = 0;
+        cycle = 0;
+      } else { // Not on last scanline
+        cycle = 0;
+        scanline ++;
+      }
+    }
   }
 
   public byte[] getScreen() {
