@@ -45,10 +45,16 @@ public class Ppu {
   byte flagEmphasizeGreen;
   byte flagEmphasizeBlue;
 
+  // VRAM access by CPU
+  ushort ppuAddr;
+  bool expectingPpuAddrLo; // Set if the PPUADDR register is expecting the low byte
+
   public Ppu(Console console) {
     _cpuMemory = console.cpuMemory;
     _memory = console.ppuMemory;
     bitmapData = new byte[256 * 240];
+
+    expectingPpuAddrLo = false;
 
     oam = new byte[256];
   }
@@ -134,11 +140,16 @@ public class Ppu {
   }
 
   void writePpuAddr(byte data) {
-    throw new NotImplementedException();
+    if (expectingPpuAddrLo) {
+      ppuAddr |= data;
+    } else {
+      ppuAddr |= (byte) (data << 8);
+    }
+    expectingPpuAddrLo = !expectingPpuAddrLo;
   }
 
   void writePpuData(byte data) {
-    throw new NotImplementedException();
+    _memory.write(ppuAddr, data);
   }
 
   void writeOamDma(byte data) {
@@ -160,6 +171,6 @@ public class Ppu {
   }
 
   byte readPpuData() {
-    throw new NotImplementedException();
+    return _memory.read(ppuAddr);
   }
 }
