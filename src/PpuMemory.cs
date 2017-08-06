@@ -39,7 +39,7 @@ public class PpuMemory : Memory {
     } else if (address >= 0x3F00 && address < 0x3F1F) {
       paletteRam[getPaletteRamIndex(address)] = data;
     } else {
-      throw new Exception("Invalid PPU Memory read at address: " + address.ToString("x4"));
+      throw new Exception("Invalid PPU Memory write at address: " + address.ToString("x4"));
     }
   }
 }
