@@ -196,7 +196,7 @@ public class Ppu {
         break;
       case 0x2005: writePpuScroll(data);
         break;
-      case 0x2006: writePpuData(data);
+      case 0x2006: writePpuAddr(data);
         break;
       case 0x2007: writePpuData(data);
         break;
@@ -243,7 +243,7 @@ public class Ppu {
     if (expectingPpuAddrLo) {
       ppuAddr |= data;
     } else {
-      ppuAddr |= (byte) (data << 8);
+      ppuAddr |= (ushort) (data << 8);
     }
     expectingPpuAddrLo = !expectingPpuAddrLo;
   }
