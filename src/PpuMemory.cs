@@ -34,7 +34,7 @@ public class PpuMemory : Memory {
   }
 
   public override void write(ushort address, byte data) {
-    if (address < 0x2FFF) { // Internal vRam
+    if (address >= 0x2000 && address <= 0x2FFF) { // Internal vRam
       vRam[getVramIndex(address)] = data;
     } else if (address >= 0x3F00 && address < 0x3F1F) {
       paletteRam[getPaletteRamIndex(address)] = data;
