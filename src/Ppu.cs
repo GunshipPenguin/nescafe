@@ -156,18 +156,7 @@ public class Ppu {
 
   private void fetchNameTableByte() {
     // Set location to base location initially
-    switch (flagBaseNameTableAddr) {
-      case 0: baseNameTableAddr = 0x2000;
-        break;
-      case 1: baseNameTableAddr = 0x2400;
-        break;
-      case 2: baseNameTableAddr = 0x2800;
-        break;
-      case 3: baseNameTableAddr = 0x2C00;
-        break;
-      default:
-        throw new Exception("Invalid base nametable address");
-    }
+    baseNameTableAddr = (ushort) (0x2000 + 0x4000*flagBaseNameTableAddr);
 
     int pixelX = cycle;
     int pixelY = scanline;
