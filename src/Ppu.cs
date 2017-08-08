@@ -21,6 +21,7 @@ public class Ppu {
 
   // Current nametable byte
   byte nameTableByte;
+  byte attributeTableByte;
 
   ushort baseNameTableAddr;
   int vRamIncrement;
@@ -135,11 +136,7 @@ public class Ppu {
     byte colorNum = (byte) (((hiBit << 1) | loBit) & 0x03);
 
     // Grab palette data from attribute table
-    int blockX = x / 32;
-    int blockY = y / 32;
-    int attributeByteIndex = (blockY * 8) + blockX;
-    ushort attributeTableEntry = _memory.read((ushort) (baseNameTableAddr + 960 + attributeByteIndex)); // Attribute tables are 960 bytes from start of nametable
-    byte attributeBits = getAttributeBitsFromCoords(x, y, attributeTableEntry);
+    byte attributeBits = getAttributeBitsFromCoords(x, y, attributeTableByte);
 
     // Lookup and return color
     byte color = getBackgroundColor(attributeBits, colorNum);
@@ -155,9 +152,6 @@ public class Ppu {
   }
 
   private void fetchNameTableByte() {
-    // Set location to base location initially
-    baseNameTableAddr = (ushort) (0x2000 + 0x4000*flagBaseNameTableAddr);
-
     int pixelX = cycle;
     int pixelY = scanline;
 
@@ -167,6 +161,18 @@ public class Ppu {
 
     ushort currNameTableAddr = (ushort) (baseNameTableAddr + (ushort) ((240 * tileY + tileX) / 8));
     nameTableByte = _memory.read(currNameTableAddr);
+  }
+
+  void fetchAttributeTableByte() {
+    int x = cycle - 1;
+    int y = scanline - 1;
+
+    // Atribute tables on 32x32 blocks
+    int blockX = x / 32;
+    int blockY = y / 32;
+
+    int attributeByteIndex = (blockY * 8) + blockX;
+    byte attributeTableByte = _memory.read((ushort) (baseNameTableAddr + 960 + attributeByteIndex)); // Attribute tables are 960 bytes from start of nametable
   }
 
   public void step() {
@@ -181,6 +187,9 @@ public class Ppu {
       } else if (cycle >= 1 && cycle <= 256) {
         if (cycle % 8 == 0) { // Fetch new rendering information if needed
           fetchNameTableByte();
+        }
+        if (cycle % 32 == 0) {
+          fetchAttributeTableByte();
         }
         
         renderPixel();
@@ -265,6 +274,8 @@ public class Ppu {
     flagMasterSlaveSelect = (byte) ((data >> 6) & 1);
     flagVBlankNmi = (byte) ((data >> 7) & 1);
 
+    // Set values based off flags
+    baseNameTableAddr = (ushort) (0x2000 + 0x4000*flagBaseNameTableAddr);
     vRamIncrement = (flagVRamIncrement == 0) ? 1 : 32;
   }
 
