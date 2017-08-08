@@ -152,12 +152,12 @@ public class Ppu {
   }
 
   private void fetchNameTableByte() {
-    int pixelX = cycle;
-    int pixelY = scanline;
+    int x = cycle - 1;
+    int y = scanline - 1;
 
     // Tiles are 8x8 pixels
-    int tileX = pixelX / 8; 
-    int tileY = pixelY / 8;
+    int tileX = x / 8; 
+    int tileY = y / 8;
 
     ushort currNameTableAddr = (ushort) (baseNameTableAddr + (ushort) ((240 * tileY + tileX) / 8));
     nameTableByte = _memory.read(currNameTableAddr);
