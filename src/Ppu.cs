@@ -147,11 +147,11 @@ public class Ppu {
   }
 
   private void renderPixel() {
-    int pixelX = cycle;
-    int pixelY = scanline;
+    int pixelX = cycle - 1;
+    int pixelY = scanline - 1;
 
     byte color = fetchBackgroundPattern(pixelX, pixelY);
-    bitmapData[pixelY * 240 + pixelX] = color;
+    bitmapData[pixelY * 256 + pixelX] = color;
   }
 
   private void fetchNameTableByte() {
