@@ -111,6 +111,9 @@ public class Cpu {
   bool V; // Overflow flag
   bool N; // Negative flag
 
+  // Interrupts
+  bool nmiInterrupt;
+
   int cycles;
 
   delegate void Instruction(AddressMode mode, ushort address);
@@ -127,6 +130,8 @@ public class Cpu {
     Y = 0;
     setProcessorFlags((byte) 0x24);
     cycles = 0;
+
+    nmiInterrupt = false;
 
     instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
@@ -149,19 +154,28 @@ public class Cpu {
     };
   }
 
+  public void triggerNmi() {
+    nmiInterrupt = true;
+  }
+
   public int step() {
+    if (nmiInterrupt) {
+      nmi();
+    }
+    nmiInterrupt = false;
+
     int cyclesOrig = cycles;
     byte opCode = _memory.read(PC);
 
-    System.Console.Write(PC.ToString("X4") + "  " + opCode.ToString("X2") + "\t\t\t\t");
+    // System.Console.Write(PC.ToString("X4") + "  " + opCode.ToString("X2") + "\t\t\t\t");
 
-    System.Console.Write("A:" + A.ToString("X2") + " ");
-    System.Console.Write("X:" + X.ToString("X2") + " ");
-    System.Console.Write("Y:" + Y.ToString("X2") + " ");
-    System.Console.Write("P:" + getStatusFlags().ToString("X2") + " ");
-    System.Console.Write("SP:" + S.ToString("X2") + " ");
-    System.Console.Write("cycles:" + cycles.ToString());
-    System.Console.Write("\n");
+    // System.Console.Write("A:" + A.ToString("X2") + " ");
+    // System.Console.Write("X:" + X.ToString("X2") + " ");
+    // System.Console.Write("Y:" + Y.ToString("X2") + " ");
+    // System.Console.Write("P:" + getStatusFlags().ToString("X2") + " ");
+    // System.Console.Write("SP:" + S.ToString("X2") + " ");
+    // // System.Console.Write("cycles:" + cycles.ToString());
+    // System.Console.Write("\n");
 
     AddressMode mode = (AddressMode) addressModes[opCode];
 
@@ -314,6 +328,13 @@ public class Cpu {
   private void handleBranchCycles(ushort origPc, ushort branchPc) {
     cycles ++;
     cycles += isPageCross(origPc, branchPc) ? 1 : 0; 
+  }
+
+  void nmi() {
+    pushStack16(PC);
+    pushStack(getStatusFlags());
+    PC = _memory.read16(0xFFFA);
+    I = true;
   }
 
   // INSTRUCTIONS FOLLOW

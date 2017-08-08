@@ -12,11 +12,18 @@ public class PpuMemory : Memory {
   }
 
   public ushort getVramIndex(ushort address) {
-    return (ushort) (address - 0x2000);
+    ushort index;
+    if (console.cartridge.verticalVramMirroring) {
+      index = address >= 0x2800 ? (ushort) (address - 0x800) : address;
+    } else { // Horizontal Mirroring  
+      index = address < 0x2800 ? (ushort) (address - 0x2000) : (ushort) (address - 0x2800);
+      index %= 0x0400;
+    }
+    return index;
   }
 
   public ushort getPaletteRamIndex(ushort address) {
-    return (ushort) (address - 0x3F00);
+    return (ushort) ((address - 0x3F00) % 32);
   }
 
   public override byte read(ushort address) {
@@ -25,7 +32,7 @@ public class PpuMemory : Memory {
       data = console.cartridge.readChrRom(address);
     } else if (address <= 0x2FFF) { // Internal vRam
       data = vRam[getVramIndex(address)];
-    } else if (address >= 0x3F00 && address <= 0x3F1F) {
+    } else if (address >= 0x3F00 && address <= 0x3FFF) {
       data = paletteRam[getPaletteRamIndex(address)];
     } else {
       throw new Exception("Invalid PPU Memory read at address: " + address.ToString("x4"));
@@ -36,7 +43,7 @@ public class PpuMemory : Memory {
   public override void write(ushort address, byte data) {
     if (address >= 0x2000 && address <= 0x2FFF) { // Internal vRam
       vRam[getVramIndex(address)] = data;
-    } else if (address >= 0x3F00 && address < 0x3F1F) {
+    } else if (address >= 0x3F00 && address <= 0x3FFF) {
       paletteRam[getPaletteRamIndex(address)] = data;
     } else {
       throw new Exception("Invalid PPU Memory write at address: " + address.ToString("x4"));

@@ -6,12 +6,15 @@ public class Cartridge {
 
   // Flags
   const uint cartridgeContainsTrainerFlag = 1<<3;
+  const uint verticalVramMirroringFlag = 1<<0;
 
   byte[] prgRom;
   byte[] chrRom;
 
   public int prgRomBanks;
   public int chrRomBanks;
+
+  public bool verticalVramMirroring;
 
   int prgRamSize;
 
@@ -46,7 +49,7 @@ public class Cartridge {
   }
 
   private void loadChrRom(BinaryReader reader) {
-    chrRom = new byte[chrRomBanks * 8192];
+    chrRom = new byte[chrRomBanks * 8192];    
     reader.Read(chrRom, 0, chrRomBanks * 8192);
   }
 
@@ -65,6 +68,7 @@ public class Cartridge {
 
     // Flags 6
     flags6 = reader.ReadByte();
+    verticalVramMirroring = (flags6 & verticalVramMirroringFlag) != 0;
 
     // Flags 7
     flags7 = reader.ReadByte();
