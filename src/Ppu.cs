@@ -265,7 +265,6 @@ public class Ppu {
   }
   
   void writePpuCtrl(byte data) {
-    System.Console.WriteLine(data);
     flagBaseNameTableAddr = (byte) (data & 0x3);
     flagVRamIncrement = (byte) ((data >> 2) & 1);
     flagPatternTableAddr = (byte) ((data >> 3) & 1);
