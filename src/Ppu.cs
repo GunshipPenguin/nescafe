@@ -158,7 +158,7 @@ public class Ppu {
     int tileX = x / 8; 
     int tileY = y / 8;
 
-    ushort currNameTableAddr = (ushort) (baseNameTableAddr + (ushort) ((240 * tileY + tileX) / 8));
+    ushort currNameTableAddr = (ushort) (baseNameTableAddr + (ushort) (tileY * 32 + tileX));
     currNameTableByte = _memory.read(currNameTableAddr);
 
     ushort patternAddress = (ushort) (bgPatternTableAddress + currNameTableByte);
