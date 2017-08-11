@@ -105,7 +105,7 @@ public class Ppu {
         throw new Exception("Invalid background palette Number: " + paletteNum.ToString());
     }
 
-    paletteAddress += (ushort) colorNum;
+    paletteAddress += (ushort) (colorNum - 1);
     return _memory.read(paletteAddress);
   }
 
