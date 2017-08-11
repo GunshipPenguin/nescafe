@@ -231,7 +231,7 @@ public class Ppu {
     }
   }
 
-  void handleRenderCycle() {}
+  void handleRenderCycle() {
     // Fetch new rendering information if needed
     if (cycle % 8 == 0 && cycle > 0 && cycle < 240) {
       incrementX();
