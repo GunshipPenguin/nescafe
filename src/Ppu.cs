@@ -195,12 +195,9 @@ public class Ppu {
   }
 
   void updateAttributeTableByte() {
-    int x = cycle - 1;
-    int y = scanline - 1;
-
-    // Atribute tables on 32x32 blocks
-    int blockX = x / 32;
-    int blockY = y / 32;
+    // Atribute tables on 4x4 tile blocks
+    int blockX = coarseX() / 4;
+    int blockY = coarseY() / 4;
 
     int attributeByteIndex = (blockY * 8) + blockX;
     byte currAttributeTableByte = _memory.read((ushort) (baseNameTableAddr + 960 + attributeByteIndex)); // Attribute tables are 960 bytes from start of nametable
