@@ -40,7 +40,7 @@ public class CpuMemory : Memory {
       data = mapper.readAddress(address);
     } else {
       data = 0;
-      System.Console.WriteLine("Invalid CPU Memory Read from address: " + address.ToString("X4"));
+      // System.Console.WriteLine("Invalid CPU Memory Read from address: " + address.ToString("X4"));
     }
 
     return data;
@@ -53,7 +53,7 @@ public class CpuMemory : Memory {
     } else if (address < 0x2008 || address == 0x4014) { // PPU Registers
       writePpuRegister(address, data);
     } else {
-      System.Console.WriteLine("Invalid CPU Memory Write to address: " + address.ToString("X4"));
+      // System.Console.WriteLine("Invalid CPU Memory Write to address: " + address.ToString("X4"));
     }
   }
 }

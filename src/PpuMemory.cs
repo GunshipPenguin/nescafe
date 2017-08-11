@@ -12,6 +12,7 @@ public class PpuMemory : Memory {
   }
 
   public ushort getVramIndex(ushort address) {
+    address = (ushort) ((address - 0x2000) % 0x1000);
     ushort index;
     if (console.cartridge.verticalVramMirroring) {
       index = address >= 0x2800 ? (ushort) (address - 0x800) : address;
@@ -41,10 +42,11 @@ public class PpuMemory : Memory {
   }
 
   public override void write(ushort address, byte data) {
-    if (address >= 0x2000 && address <= 0x2FFF) { // Internal vRam
+    if (address >= 0x2000 && address <= 0x3EFF) { // Internal vRam
       vRam[getVramIndex(address)] = data;
     } else if (address >= 0x3F00 && address <= 0x3FFF) {
-      paletteRam[getPaletteRamIndex(address)] = data;
+      ushort addr = getPaletteRamIndex(address);
+      paletteRam[addr] = data;
     } else {
       throw new Exception("Invalid PPU Memory write at address: " + address.ToString("x4"));
     }

@@ -45,7 +45,10 @@ public class Ppu {
   byte flagBgPatternTableAddr;
   byte flagSpriteSize;
   byte flagMasterSlaveSelect;
-  byte flagVBlankNmi;
+  byte nmiOutput;
+
+  // NMI Occurred flag
+  byte nmiOccurred;
 
   // PPUMASK Register flags
   byte flagGreyscale;
@@ -57,9 +60,11 @@ public class Ppu {
   byte flagEmphasizeGreen;
   byte flagEmphasizeBlue;
 
-  // VRAM access by CPU
-  ushort ppuAddr;
-  bool expectingPpuAddrLo; // Set if the PPUADDR register is expecting the low byte
+  // Internal PPU Registers
+  ushort v; // Current VRAM address (15 bits)
+  ushort t; // Temporary VRAM address (15 bits)
+  byte x; // Fine X scroll (3 bits)
+  byte w; // First or second write toggle (1 bit)
 
   public Ppu(Console console) {
     _cpuMemory = console.cpuMemory;
@@ -69,10 +74,13 @@ public class Ppu {
 
     currBgPattern = new byte[2];
 
-    expectingPpuAddrLo = false;
-
     scanline = 0;
     cycle = 0;
+
+    nmiOccurred = 0;
+    nmiOutput = 0;
+
+    w = 0;
 
     oam = new byte[256];
   }
@@ -101,22 +109,22 @@ public class Ppu {
     return _memory.read(paletteAddress);
   }
 
-  byte getAttributeBitsFromCoords(int x, int y, int attributeByte) {
-    bool isLeft = (x % 16) < 8;
-    bool isTop = (y % 16) < 8;
+  byte getCurrAttributeBits() {
+    bool isLeft = (coarseX() % 4) < 2;
+    bool isTop = (coarseY() % 4) < 2;
 
     byte bits;
     if (isTop) {
       if (isLeft) { // Top left
-        bits = (byte) (attributeByte >> 0);
+        bits = (byte) (currAttributeTableByte >> 0);
       } else { // Top right
-        bits = (byte) (attributeByte >> 2);
+        bits = (byte) (currAttributeTableByte >> 2);
       }
     } else {
       if (isLeft) { // Bottom left
-        bits = (byte) (attributeByte >> 4);
+        bits = (byte) (currAttributeTableByte >> 4);
       } else { // Bottom right
-        bits = (byte) (attributeByte >> 6);
+        bits = (byte) (currAttributeTableByte >> 6);
       }
     }
 
@@ -124,46 +132,66 @@ public class Ppu {
   }
 
   // Gets the CHR of the current background pixel as specified in nametablebyte
-  private byte getBackgroundColorAtCoords(int x, int y) {
-    // X and Y pixel coordinates relative to the pattern in the pattern table
-    int patternX = x % 8;
-    int patternY = y % 8;
+  private byte getBackgroundPixelColor() {
+    if (flagShowBackground == 0) {
+      return 0;
+    }
 
     // Create color number from bitfields in current background pattern
-    byte loBit = (byte) (currBgPattern[0] >> patternX);
-    byte hiBit = (byte) (currBgPattern[1] >> patternX);
+    byte loBit = (byte) (currBgPattern[0] >> (fineX() - 1));
+    byte hiBit = (byte) (currBgPattern[1] >> (fineX() - 1));
     byte colorNum = (byte) (((hiBit << 1) | loBit) & 0x03);
 
-    // Grab palette data from attribute table
-    byte attributeBits = getAttributeBitsFromCoords(x, y, currAttributeTableByte);
-
     // Lookup and return color
-    byte color = lookupBackgroundColor(attributeBits, colorNum);
+    byte color = lookupBackgroundColor(getCurrAttributeBits(), colorNum);
     return color;
   }
 
-  private void renderPixel() {
+  void copyHorizPositionData() {
+    // v: ....F.. ...EDCBA = t: ....F.. ...EDCBA
+    v = (ushort) ((v & 0x7BE0) | t);
+  }
+
+  void copyVertPositionData() {
+    // v: IHGF.ED CBA..... = t: IHGF.ED CBA.....
+    v = (ushort) ((v & 0x041F) | t);
+  }
+
+  void renderPixel() {
     int pixelX = cycle - 1;
     int pixelY = scanline - 1;
 
-    byte color = getBackgroundColorAtCoords(pixelX, pixelY);
+    byte color = getBackgroundPixelColor();
     bitmapData[pixelY * 256 + pixelX] = color;
   }
 
-  private void updateNameTableByte() {
-    int x = cycle - 1;
-    int y = scanline - 1;
+  int coarseX() {
+    return v & 0x1f;
+  }
 
-    // Tiles are 8x8 pixels
-    int tileX = x / 8; 
-    int tileY = y / 8;
+  int fineX() {
+    return (cycle + x) % 8;
+  }
 
-    ushort currNameTableAddr = (ushort) (baseNameTableAddr + (ushort) (tileY * 32 + tileX));
+  int coarseY() {
+    return (v >> 5) & 0x1f;
+  }
+
+  int fineY() {
+    return (v >> 12) & 0x7;
+  }
+
+  void updateNameTableByte() {
+    ushort currNameTableAddr = (ushort) (baseNameTableAddr + (ushort) (coarseY() * 32 + coarseX()));
     currNameTableByte = _memory.read(currNameTableAddr);
+  }
 
-    ushort patternAddress = (ushort) (bgPatternTableAddress + currNameTableByte);
-    currBgPattern[0] = _memory.read(patternAddress);
-    currBgPattern[1] = _memory.read((ushort) (patternAddress + 1));
+  void updateBgPattern() {
+    ushort patternAddress = (ushort) (bgPatternTableAddress + currNameTableByte * 16);
+
+    ushort patternYAddr = (ushort) (patternAddress + fineY());
+    currBgPattern[0] = _memory.read(patternYAddr);
+    currBgPattern[1] = _memory.read((ushort) (patternYAddr + 8));
   }
 
   void updateAttributeTableByte() {
@@ -178,38 +206,111 @@ public class Ppu {
     byte currAttributeTableByte = _memory.read((ushort) (baseNameTableAddr + 960 + attributeByteIndex)); // Attribute tables are 960 bytes from start of nametable
   }
 
-  public void step() {
-    if (scanline == 0) {  // Do nothing, dummy scanline
+  void incrementX() {
+    if ((v & 0x001F) == 31) {
+      v = (ushort) (v & (~0x001F)); // Reset Coarse X
+      v = (ushort) (v ^ 0x0400); // Switch horizontal nametable
+    } else {
+      v ++; // Increment Coarse X
+    }
+  }
 
-    } else if (scanline >= 1 && scanline <= 240) { // Rendering scanlines
-      if (cycle == 0) { // Do nothing, idle cycle
+  void incrementY() {
+    if ((v & 0x7000) != 0x7000) { // if fine Y < 7
+      v += 0x1000; // increment fine Y
+    } else {
+      v = (ushort) (v & ~0x7000u & 0xFFFF); // Set fine Y to 0
+      int y = (v & 0x03E0) >> 5; // y = coarse Y
+      if (y == 29) {
+        y = 0; // coarse Y = 0
+        v = (ushort) (v ^ 0x0800); // switch vertical nametable
+      } else if (y == 31) {
+        y = 0; // coarse Y = 0, nametable not switched
+      } else {
+        y += 1; // Increment coarse Y
+        v = (ushort) ((v & ~0x03E0) | (y << 5)); // Put coarse Y back into v
+      }
+    }
+  }
 
-      } else if (cycle >= 1 && cycle <= 256) {
-        if (cycle % 8 == 0) { // Fetch new rendering information if needed
-          updateNameTableByte();
-        }
-        if (cycle % 32 == 0) {
-          updateAttributeTableByte();
-        }
-        
-        renderPixel();
-      } else { // Cycles that fetch data for next scanline
-        // TODO Implement fetching of data for next scanline
-      }
-    } else if (scanline > 240 && scanline < 260) { // Memory fetch scanlines
-      if (scanline == 241 && cycle == 1) {
-        if (flagVBlankNmi != 0) {
-          _console.cpu.triggerNmi();
-        }
-      }
-      // TODO Add memory fetch stuff here
-    } else if (scanline == 260) { // Vblank, next frame
-      // TODO Add vblank stuff here
+  void handleRenderCycle() {
+    int pixelX = cycle - 1;
+    int pixelY = scanline - 1;
+
+    // if (pixelX == 24 && pixelY == 16) {
+    //   System.Console.Write("");
+    // }
+
+    // Fetch new rendering information if needed
+    if (pixelX % 8 == 0 && cycle < 240) {
+      incrementX();
+      updateNameTableByte();
+      updateBgPattern();
+    }
+    if (pixelX % 32 == 0) {
+      updateAttributeTableByte();
+    }
+    // Increment Y in v register if needed
+    if (cycle == 256) {
+      incrementY();
     }
 
-    // Increment cycle and scanline if cycle == 340
-    // Also set to next frame if at end of last scanline
+    if (cycle == 0) { // Do nothing, idle cycle
+
+    } else if (cycle >= 1 && cycle <= 256) {
+      // System.Console.WriteLine("(" + coarseX().ToString() + "." + fineX().ToString() + "," + coarseY().ToString() + "." + fineY().ToString() + ")");
+      renderPixel();
+    } else { // Cycles that fetch data for next scanline
+      // TODO Implement fetching of data for next scanline
+    }
+  }
+
+  public void step() {
+    // Trigger an NMI at the start of scanline 241 if VBLANK NMI's are enabled
+    if (scanline == 241 && cycle == 1) {
+      nmiOccurred = 1;
+      if (nmiOccurred != 0 && nmiOutput != 0) {
+      _console.cpu.triggerNmi();
+      }
+    }
+
+    if (scanline == 0) {
+      nmiOccurred = 0;
+    }
+
+    bool renderingEnabled = (flagShowBackground != 0) || (flagShowSprites != 0);
+
+    if (renderingEnabled) {
+      if (scanline == 0) {  // Do nothing, dummy scanline
+
+      } else if (scanline >= 1 && scanline < 240) { // Rendering scanlines
+        handleRenderCycle();
+      } else if (scanline == 240) {
+        // Idle scanline
+      } else if (scanline > 240 && scanline < 260) { // Memory fetch scanlines
+        // TODO Add memory fetch stuff here
+      } else if (scanline == 260) { // Vblank, next frame
+        // TODO Add vblank stuff here
+      }
+
+    }
+
     cycle ++;
+
+    if (renderingEnabled) {
+      // Copy horizontal position data from t to v on cycle 257 of each scanline if rendering enabled
+      if (cycle == 257) {
+        copyHorizPositionData();
+      } 
+      
+      // Copy vertical position data from t to v repeatedly from cycle 280 to 304 (if rendering is enabled)
+      if (cycle >= 280 && cycle <= 304 && scanline == 0) {
+        copyVertPositionData();
+      }
+    }
+
+    // Reset cycle (and scanline if scanline == 260)
+    // Also set to next frame if at end of last scanline
     if (cycle == 340) {
       if (scanline == 260) { // Last scanline, reset to upper left corner
         scanline = 0;
@@ -264,6 +365,7 @@ public class Ppu {
     }
   }
   
+  // $2000
   void writePpuCtrl(byte data) {
     flagBaseNameTableAddr = (byte) (data & 0x3);
     flagVRamIncrement = (byte) ((data >> 2) & 1);
@@ -271,14 +373,18 @@ public class Ppu {
     flagBgPatternTableAddr = (byte) ((data >> 4) & 1);
     flagSpriteSize = (byte) ((data >> 5) & 1);
     flagMasterSlaveSelect = (byte) ((data >> 6) & 1);
-    flagVBlankNmi = (byte) ((data >> 7) & 1);
+    nmiOutput = (byte) ((data >> 7) & 1);
 
     // Set values based off flags
     baseNameTableAddr = (ushort) (0x2000 + 0x4000*flagBaseNameTableAddr);
     vRamIncrement = (flagVRamIncrement == 0) ? 1 : 32;
     bgPatternTableAddress = (ushort) (flagBgPatternTableAddr == 0 ? 0x0000 : 0x1000);
+
+    // t: ...BA.. ........ = d: ......BA
+    t = (ushort) ((t & 0xF3FF) | ((data & 0x03) << 10));
   }
 
+  // $2001
   void writePpuMask(byte data) {
     flagGreyscale = (byte) (data & 1);
     flagShowBackgroundLeft = (byte) ((data >> 1) & 1);
@@ -290,54 +396,90 @@ public class Ppu {
     flagEmphasizeBlue = (byte) ((data >> 7) & 1);
   }
 
+  // $4014
   void writeOamAddr(byte data) {
     oamAddr = data;
   }
 
+  // $2004
   void writeOamData(byte data) {
     oam[oamAddr] = data;
     oamAddr ++;
   }
 
+  // $2005
   void writePpuScroll(byte data) {
-    throw new NotImplementedException();
-  }
-
-  void writePpuAddr(byte data) {
-    if (expectingPpuAddrLo) {
-      ppuAddr |= data;
+    if (w == 0) { // First write
+      // t: ....... ...HGFED = d: HGFED...
+      // x:              CBA = d: .....CBA
+      // w:                  = 1
+      t = (ushort) ((t & 0xFFE0) | (data << 3));
+      x = (byte) (data & 0x07);
+      w = 1;
     } else {
-      ppuAddr |= (ushort) (data << 8);
+      // t: CBA..HG FED..... = d: HGFEDCBA
+      // w:                  = 0
+      t = (ushort) (t & 0xC1F);
+      t |= (ushort) ((data & 0x07) << 13); // CBA
+      t |= (ushort) ((data & 0xF8) << 2); // HG FED
+      w = 0;
     }
-    expectingPpuAddrLo = !expectingPpuAddrLo;
   }
 
+  // $2006
+  void writePpuAddr(byte data) {
+    if (w == 0) { // First write
+      // t: .FEDCBA ........ = d: ..FEDCBA
+      // t: X...... ........ = 0
+      // w:                  = 1
+      t = (ushort) ((t & 0x00FF) | (data << 8));
+      w = 1;
+    } else {
+      // t: ....... HGFEDCBA = d: HGFEDCBA
+      // v                   = t
+      // w:                  = 0
+      t = (ushort) ((t & 0xFF00) | data);
+      v = t;
+      w = 0;
+    }
+  }
+
+  // $2007
   void writePpuData(byte data) {
-    _memory.write(ppuAddr, data);
-    ppuAddr += (ushort) (vRamIncrement);
+    _memory.write(v, data);
+    v += (ushort) (vRamIncrement);
   }
 
+  // $4014
   void writeOamDma(byte data) {
     throw new NotImplementedException();
   }
 
+  // $2002
   byte readPpuStatus() {
     byte retVal = 0;
     retVal |= (byte) (lastRegisterWrite & 0x1F); // Least signifigant 5 bits of last register write
     retVal |= (byte) (flagSpriteOverflow << 5);
     retVal |= (byte) (flagSprite0Hit << 6);
-    retVal |= (byte) ((scanline > 240 ? 1 : 0) << 7);
+    retVal |= (byte) (nmiOccurred << 7);
 
-    ppuAddr = 0;
+    // Old status of nmiOccurred is returned then nmiOccurred is cleared
+    nmiOccurred = 0;
+
+    // w:                  = 0
+    w = 0;
 
     return retVal;
   }
 
+  // $2004
   byte readOamData() {
     return oam[oamAddr];
   }
 
+  // $2007
   byte readPpuData() {
-    return _memory.read(ppuAddr);
+    return _memory.read(v);
+    v += (ushort) (vRamIncrement);
   }
 }
