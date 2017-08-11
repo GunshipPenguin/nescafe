@@ -138,8 +138,8 @@ public class Ppu {
     }
 
     // Create color number from bitfields in current background pattern
-    byte loBit = (byte) (currBgPattern[0] >> (fineX() - 1));
-    byte hiBit = (byte) (currBgPattern[1] >> (fineX() - 1));
+    byte loBit = (byte) (currBgPattern[0] >> (7 - fineX()));
+    byte hiBit = (byte) (currBgPattern[1] >> (7 - fineX()));
     byte colorNum = (byte) (((hiBit << 1) | loBit) & 0x03);
 
     // Lookup and return color
