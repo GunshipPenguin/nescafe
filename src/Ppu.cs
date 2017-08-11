@@ -233,7 +233,7 @@ public class Ppu {
 
   void handleRenderCycle() {
     // Fetch new rendering information if needed
-    if (cycle % 8 == 0 && cycle > 0 && cycle < 240) {
+    if (cycle % 8 == 0 && cycle > 0 && cycle < 256) {
       incrementX();
       updateNameTableByte();
       updateBgPattern();
