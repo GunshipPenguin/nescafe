@@ -11,7 +11,7 @@ class Display : Form {
 
     public Display(Console console) {
         Text = "Nes Emulator";
-        Size = new Size(720, 486);
+        Size = new Size(512, 480);
         ResizeRedraw = true;
         
         Paint += new PaintEventHandler(OnPaint);
@@ -116,6 +116,6 @@ class Display : Form {
     }
 
     void OnPaint(object sender, PaintEventArgs e) {
-        e.Graphics.DrawImage(frame, 0, 0, 720, 486);
+        e.Graphics.DrawImage(frame, 0, 0, Size.Width, Size.Height);
     }
 }
