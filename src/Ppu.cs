@@ -128,6 +128,7 @@ public class Ppu {
       }
     }
 
+
     return (byte) (bits & 0x3);
   }
 
@@ -195,12 +196,12 @@ public class Ppu {
   }
 
   void updateAttributeTableByte() {
-    // Atribute tables on 4x4 tile blocks
+    // Atribute tables operate on 4x4 tile blocks
     int blockX = coarseX() / 4;
     int blockY = coarseY() / 4;
 
     int attributeByteIndex = (blockY * 8) + blockX;
-    byte currAttributeTableByte = _memory.read((ushort) (baseNameTableAddr + 960 + attributeByteIndex)); // Attribute tables are 960 bytes from start of nametable
+    currAttributeTableByte = _memory.read((ushort) (baseNameTableAddr + 960 + attributeByteIndex)); // Attribute tables are 960 bytes from start of nametable
   }
 
   void incrementX() {
@@ -231,6 +232,11 @@ public class Ppu {
   }
 
   void handleRenderCycle() {
+
+    if (coarseX() == 0 && coarseY() == 16 && cycle == 0) {
+      System.Console.WriteLine("asdf");
+    }
+
     // Fetch new rendering information if needed
     if (cycle % 8 == 0 && cycle > 0 && cycle < 240) {
       incrementX();
