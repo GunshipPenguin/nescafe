@@ -231,14 +231,16 @@ public class Ppu {
     }
   }
 
-  void handleRenderCycle() {
-    // Fetch new rendering information if needed
-    if (cycle % 8 == 0 && cycle > 0 && cycle < 256) {
+  void handleRenderScanline() {
+    bool isRenderingCycle = cycle > 0 && cycle <= 256;
+
+    // Fetch new rendering information if needed and if this is a rendering cycle
+    if (cycle % 8 == 0 && isRenderingCycle) {
       incrementX();
       updateNameTableByte();
       updateBgPattern();
     }
-    if (cycle % 32 == 0) {
+    if (cycle % 32 == 0 && isRenderingCycle) {
       updateAttributeTableByte();
     }
     
@@ -275,7 +277,7 @@ public class Ppu {
       if (scanline == 0) {  // Do nothing, dummy scanline
 
       } else if (scanline >= 1 && scanline < 240) { // Rendering scanlines
-        handleRenderCycle();
+        handleRenderScanline();
       } else if (scanline == 240) {
         // Idle scanline
       } else if (scanline > 240 && scanline < 260) { // Memory fetch scanlines
