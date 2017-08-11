@@ -234,22 +234,16 @@ public class Ppu {
   }
 
   void handleRenderCycle() {
-    int pixelX = cycle - 1;
-    int pixelY = scanline - 1;
-
-    // if (pixelX == 24 && pixelY == 16) {
-    //   System.Console.Write("");
-    // }
-
     // Fetch new rendering information if needed
-    if (pixelX % 8 == 0 && cycle < 240) {
+    if (cycle % 8 == 0 && cycle > 0 && cycle < 240) {
       incrementX();
       updateNameTableByte();
       updateBgPattern();
     }
-    if (pixelX % 32 == 0) {
+    if (cycle % 32 == 0) {
       updateAttributeTableByte();
     }
+    
     // Increment Y in v register if needed
     if (cycle == 256) {
       incrementY();
@@ -258,7 +252,6 @@ public class Ppu {
     if (cycle == 0) { // Do nothing, idle cycle
 
     } else if (cycle >= 1 && cycle <= 256) {
-      // System.Console.WriteLine("(" + coarseX().ToString() + "." + fineX().ToString() + "," + coarseY().ToString() + "." + fineY().ToString() + ")");
       renderPixel();
     } else { // Cycles that fetch data for next scanline
       // TODO Implement fetching of data for next scanline
