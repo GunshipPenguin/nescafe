@@ -14,19 +14,24 @@ public class Ppu {
 
   // OAM
   byte[] oam;
+  byte[] secondaryOam;
   ushort oamAddr;
+  int numSprites;
 
   int scanline;
   int cycle;
 
-  // Current nametable, attribute table and pattern bytes
+  // Current nametable, attribute table and background pattern address
   byte currNameTableByte;
   byte currAttributeTableByte;
-  byte[] currBgPattern; // 2 bytes
+  ushort currBgPatternAddress;
 
-  // Base nametable and pattern table address
+  // Base background nametable and pattern table address
   ushort baseNameTableAddr;
   ushort bgPatternTableAddress;
+
+  // Base sprite pattern table address
+  ushort spritePatternTableAddr;
 
   // Vram increment per write to PPUDATA
   int vRamIncrement;
@@ -41,7 +46,7 @@ public class Ppu {
   // PPUCTRL Register flags
   byte flagBaseNameTableAddr;
   byte flagVRamIncrement;
-  byte flagPatternTableAddr;
+  byte flagSpritePatternTableAddr;
   byte flagBgPatternTableAddr;
   byte flagSpriteSize;
   byte flagMasterSlaveSelect;
@@ -72,8 +77,6 @@ public class Ppu {
     _console = console;
     bitmapData = new byte[256 * 240];
 
-    currBgPattern = new byte[2];
-
     scanline = 0;
     cycle = 0;
 
@@ -83,6 +86,7 @@ public class Ppu {
     w = 0;
 
     oam = new byte[256];
+    secondaryOam = new byte[32];
   }
 
   byte lookupBackgroundColor(int paletteNum, int colorNum) {
@@ -100,6 +104,30 @@ public class Ppu {
       case 2: paletteAddress = (ushort) 0x3F09;
         break;
       case 3: paletteAddress = (ushort) 0x3F0D;
+        break;
+      default:
+        throw new Exception("Invalid background palette Number: " + paletteNum.ToString());
+    }
+
+    paletteAddress += (ushort) (colorNum - 1);
+    return _memory.read(paletteAddress);
+  }
+
+  byte lookupSpriteColor(int paletteNum, int colorNum) {
+    // Special case for universal background color
+    if (colorNum == 0) {
+      return _memory.read(0x3F00);
+    }
+
+    ushort paletteAddress;
+    switch (paletteNum) {
+      case 0: paletteAddress = (ushort) 0x3F11;
+        break;
+      case 1: paletteAddress = (ushort) 0x3F15;
+        break;
+      case 2: paletteAddress = (ushort) 0x3F19;
+        break;
+      case 3: paletteAddress = (ushort) 0x3F1D;
         break;
       default:
         throw new Exception("Invalid background palette Number: " + paletteNum.ToString());
@@ -128,8 +156,45 @@ public class Ppu {
       }
     }
 
-
     return (byte) (bits & 0x3);
+  }
+
+  byte getSpritePixelColor() {
+    if (flagShowSprites == 0) {
+      return 0;
+    }
+
+    int xPos = cycle - 1;
+    int yPos = scanline - 1;
+    byte colorValue = 0;
+
+    // Get sprite pattern bitfield
+    for(int i=0;i<numSprites*4;i+=4) {
+      int spriteXLeft = secondaryOam[i + 3];
+      int offset = xPos - spriteXLeft;
+
+      if (offset <= 7 && offset >= 0) {
+        // Found intersecting sprite
+        byte patternIndex = secondaryOam[i + 1];
+        int yOffset = yPos - secondaryOam[i];
+
+        ushort patternAddress = (ushort) (spritePatternTableAddr + (patternIndex * 16));
+      
+        bool flipHoriz = (secondaryOam[i + 2] & 0x40) != 0;
+        bool flipVert = (secondaryOam[i + 2] & 0x80) != 0;
+        int colorNum = getPatternPixel(patternAddress, offset, yOffset, flipHoriz, flipVert);
+
+        // Handle transparent sprites
+        if (colorNum == 0) {
+          return 0;
+        } else {
+          byte paletteNum = (byte) (secondaryOam[i + 2] & 0x03);
+          return lookupSpriteColor(paletteNum, colorNum);
+        }
+      }
+    }
+
+    return colorValue;
   }
 
   // Gets the CHR of the current background pixel as specified in nametablebyte
@@ -138,10 +203,13 @@ public class Ppu {
       return 0;
     }
 
+    int colorNum = getPatternPixel(currBgPatternAddress, fineX(), fineY());
+
     // Create color number from bitfields in current background pattern
-    byte loBit = (byte) ((currBgPattern[0] >> (7 - fineX())) & 1);
-    byte hiBit = (byte) ((currBgPattern[1] >> (7 - fineX())) & 1);
-    byte colorNum = (byte) (((hiBit << 1) | loBit) & 0x03);
+    // int colorNum = getColorFromPattern(currBgPattern, fineX());
+    // byte loBit = (byte) ((pattern[0] >> (7 - x)) & 1);
+    // byte hiBit = (byte) ((pattern[1] >> (7 - x)) & 1);
+    // return ((hiBit << 1) | loBit) & 0x03;
 
     // Lookup and return color
     byte color = lookupBackgroundColor(getCurrAttributeBits(), colorNum);
@@ -162,8 +230,10 @@ public class Ppu {
     int pixelX = cycle - 1;
     int pixelY = scanline - 1;
 
-    byte color = getBackgroundPixelColor();
-    bitmapData[pixelY * 256 + pixelX] = color;
+    byte backgroundPixel = getBackgroundPixelColor();
+    byte spritePixel = getSpritePixelColor();
+
+    bitmapData[pixelY * 256 + pixelX] = spritePixel == 0 ? backgroundPixel :spritePixel;
   }
 
   int coarseX() {
@@ -185,14 +255,27 @@ public class Ppu {
   void updateNameTableByte() {
     ushort currNameTableAddr = (ushort) (baseNameTableAddr + (ushort) (coarseY() * 32 + coarseX()));
     currNameTableByte = _memory.read(currNameTableAddr);
+    currBgPatternAddress = (ushort) (bgPatternTableAddress + (currNameTableByte * 16));
   }
 
-  void updateBgPattern() {
-    ushort patternAddress = (ushort) (bgPatternTableAddress + currNameTableByte * 16);
+  int getPatternPixel(ushort patternAddr, int x, int y, bool flipHoriz=false, bool flipVert=false) {
+    // Flip x and y if needed
+    x = flipHoriz ? 7 - x : x;
+    y = flipVert ? 7 - y : y;
+    
+    // First byte in bitfield
+    ushort yAddr = (ushort) (patternAddr + y);
 
-    ushort patternYAddr = (ushort) (patternAddress + fineY());
-    currBgPattern[0] = _memory.read(patternYAddr);
-    currBgPattern[1] = _memory.read((ushort) (patternYAddr + 8));
+    // Read the 2 bytes in the bitfield for the y coordinate
+    byte[] pattern = new byte[2];
+    pattern[0] = _memory.read(yAddr);
+    pattern[1] = _memory.read((ushort) (yAddr + 8));
+
+    // Extract correct bits based on x coordinate
+    byte loBit = (byte) ((pattern[0] >> (7 - x)) & 1);
+    byte hiBit = (byte) ((pattern[1] >> (7 - x)) & 1);
+
+    return ((hiBit << 1) | loBit) & 0x03;
   }
 
   void updateAttributeTableByte() {
@@ -231,6 +314,35 @@ public class Ppu {
     }
   }
 
+  void evalSprites() {
+    numSprites = 0;
+    int yPos = scanline;
+    int secondaryOamIndex = 0;
+
+    for (int i=0;i<oam.Length;i+=4) {
+      if (secondaryOamIndex == 32) {
+        flagSpriteOverflow = 1;
+        break;
+      }
+
+      byte spriteYTop = oam[i];
+
+      // spriteYTop == 0 indicates that this is not a sp
+      if (spriteYTop == 0) {
+        break;
+      }
+
+      int offset = yPos - spriteYTop;
+
+      // If this sprite is on the next scanline, copy it to secondary oam
+      if (offset <= 7 && offset >= 0) {
+        Array.Copy(oam, i, secondaryOam, secondaryOamIndex, 4);
+        secondaryOamIndex += 4;
+        numSprites ++;
+      }
+    }
+  }
+
   void handleRenderScanline() {
     bool isRenderingCycle = cycle > 0 && cycle <= 256;
 
@@ -238,7 +350,6 @@ public class Ppu {
     if (cycle % 8 == 0 && isRenderingCycle) {
       incrementX();
       updateNameTableByte();
-      updateBgPattern();
     }
     if (cycle % 32 == 0 && isRenderingCycle) {
       updateAttributeTableByte();
@@ -247,6 +358,13 @@ public class Ppu {
     // Increment Y in v register if needed
     if (cycle == 256) {
       incrementY();
+    }
+
+    // Evaluate sprites on cycle 257
+    // Actual sprite evaluation runs on multiple cycles
+    // but this works
+    if (cycle == 257 && scanline != 0) {
+      evalSprites();
     }
 
     if (cycle == 0) { // Do nothing, idle cycle
@@ -275,7 +393,10 @@ public class Ppu {
 
     if (renderingEnabled) {
       if (scanline == 0) {  // Do nothing, dummy scanline
-
+        // Sprite overflow flag cleared at dot 1 of scanline 0
+        if (cycle == 1) {
+          flagSpriteOverflow = 0;
+        }
       } else if (scanline >= 1 && scanline < 240) { // Rendering scanlines
         handleRenderScanline();
       } else if (scanline == 240) {
@@ -364,7 +485,7 @@ public class Ppu {
   void writePpuCtrl(byte data) {
     flagBaseNameTableAddr = (byte) (data & 0x3);
     flagVRamIncrement = (byte) ((data >> 2) & 1);
-    flagPatternTableAddr = (byte) ((data >> 3) & 1);
+    flagSpritePatternTableAddr = (byte) ((data >> 3) & 1);
     flagBgPatternTableAddr = (byte) ((data >> 4) & 1);
     flagSpriteSize = (byte) ((data >> 5) & 1);
     flagMasterSlaveSelect = (byte) ((data >> 6) & 1);
@@ -374,6 +495,8 @@ public class Ppu {
     baseNameTableAddr = (ushort) (0x2000 + 0x4000*flagBaseNameTableAddr);
     vRamIncrement = (flagVRamIncrement == 0) ? 1 : 32;
     bgPatternTableAddress = (ushort) (flagBgPatternTableAddr == 0 ? 0x0000 : 0x1000);
+    spritePatternTableAddr = (ushort) (0x1000 * flagSpritePatternTableAddr);
+
 
     // t: ...BA.. ........ = d: ......BA
     t = (ushort) ((t & 0xF3FF) | ((data & 0x03) << 10));
@@ -447,7 +570,8 @@ public class Ppu {
 
   // $4014
   void writeOamDma(byte data) {
-    throw new NotImplementedException();
+    ushort startAddr = (ushort) (data << 8);
+    _console.cpuMemory.readBuf(oam, startAddr, 256);
   }
 
   // $2002
