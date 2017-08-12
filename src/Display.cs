@@ -116,6 +116,7 @@ class Display : Form {
     }
 
     void OnPaint(object sender, PaintEventArgs e) {
+        e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
         e.Graphics.DrawImage(frame, 0, 0, Size.Width, Size.Height);
     }
 }
