@@ -17,6 +17,9 @@ class Display : Form {
         Paint += new PaintEventHandler(OnPaint);
         CenterToScreen();
 
+        KeyDown += new KeyEventHandler(OnKeyDown);
+        KeyUp += new KeyEventHandler(OnKeyUp);
+
         frame = new Bitmap(256, 240, PixelFormat.Format8bppIndexed);
         initPalette();
 
@@ -113,6 +116,37 @@ class Display : Form {
         frame.UnlockBits(frameData);
 
         Invalidate();
+    }
+
+    void OnKeyDown(object sender, KeyEventArgs e) {
+        System.Console.WriteLine("Got keydown: " + e.KeyCode);
+        setControllerButton(true, e);
+    }
+
+    void OnKeyUp(object sender, KeyEventArgs e) {
+        System.Console.WriteLine("Got keyup: " + e.KeyCode);
+        setControllerButton(false, e);
+    }
+
+    void setControllerButton(bool state, KeyEventArgs e) {
+        switch(e.KeyCode) {
+            case Keys.Z: console.controller.setButtonState(Controller.Button.A, state);
+                break;
+            case Keys.X: console.controller.setButtonState(Controller.Button.B, state);
+                break;
+            case Keys.Left: console.controller.setButtonState(Controller.Button.Left, state);
+                break;
+            case Keys.Right: console.controller.setButtonState(Controller.Button.Right, state);
+                break;
+            case Keys.Up: console.controller.setButtonState(Controller.Button.Up, state);
+                break;
+            case Keys.Down: console.controller.setButtonState(Controller.Button.Down, state);
+                break;
+            case Keys.Q: console.controller.setButtonState(Controller.Button.Start, state);
+                break;
+            case Keys.W: console.controller.setButtonState(Controller.Button.Select, state);
+                break;
+        }
     }
 
     void OnPaint(object sender, PaintEventArgs e) {

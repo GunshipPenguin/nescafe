@@ -44,6 +44,8 @@ public class CpuMemory : Memory {
       data = readPpuRegister(address);
     } else if (address >= 0x4020) { // Program ROM
       data = mapper.readAddress(address);
+    } else if (address == 0x4016) {
+      data = console.controller.readControllerOutput();
     } else {
       data = 0;
       // System.Console.WriteLine("Invalid CPU Memory Read from address: " + address.ToString("X4"));
@@ -58,6 +60,8 @@ public class CpuMemory : Memory {
       internalRam[addressIndex] = data;
     } else if (address <= 0x3FFF || address == 0x4014) { // PPU Registers
       writePpuRegister(address, data);
+    } else if (address == 0x4016) {
+      console.controller.writeControllerInput(data);
     } else {
       // System.Console.WriteLine("Invalid CPU Memory Write to address: " + address.ToString("X4"));
     }
