@@ -18,7 +18,12 @@ public class CpuMemory : Memory {
   }
 
   private ushort getPpuRegisterFromAddress(ushort address) {
-    return (ushort) (0x2000 + ((address - 0x2000) % 8));
+    // Special case for OAMDMA ($4014) which is not alongside the other registers
+    if (address == 0x4014) {
+      return address;
+    } else {
+      return (ushort) (0x2000 + ((address - 0x2000) % 8));
+    }
   }
 
   private void writePpuRegister(ushort address, byte data) {
@@ -34,7 +39,7 @@ public class CpuMemory : Memory {
     if (address < 0x2000) { // Internal CPU RAM 
       ushort addressIndex = handleInternalRamMirror(address);
       data = internalRam[addressIndex];
-    } else if (address < 0x2008 || address == 0x4014) { // PPU Registers
+    } else if (address < 0x2008) { // PPU Registers
       data = readPpuRegister(address);
     } else if (address >= 0x4020) { // Program ROM
       data = mapper.readAddress(address);

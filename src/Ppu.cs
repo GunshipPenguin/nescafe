@@ -353,6 +353,8 @@ public class Ppu {
         break;
       case 0x2007: writePpuData(data);
         break;
+      case 0x4014: writeOamDma(data);
+        break;
       default:
         throw new Exception("Invalid PPU Register write to register: " + address.ToString("X4"));
     }
