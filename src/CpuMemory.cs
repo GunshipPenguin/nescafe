@@ -17,6 +17,7 @@ public class CpuMemory : Memory {
     return (ushort) (address % 0x800);
   }
 
+  // Handles mirroring of PPU register addresses
   private ushort getPpuRegisterFromAddress(ushort address) {
     // Special case for OAMDMA ($4014) which is not alongside the other registers
     if (address == 0x4014) {
@@ -39,7 +40,7 @@ public class CpuMemory : Memory {
     if (address < 0x2000) { // Internal CPU RAM 
       ushort addressIndex = handleInternalRamMirror(address);
       data = internalRam[addressIndex];
-    } else if (address < 0x2008) { // PPU Registers
+    } else if (address <= 0x3FFF) { // PPU Registers
       data = readPpuRegister(address);
     } else if (address >= 0x4020) { // Program ROM
       data = mapper.readAddress(address);
@@ -55,7 +56,7 @@ public class CpuMemory : Memory {
     if (address < 0x2000) { // Internal CPU RAM 
       ushort addressIndex = handleInternalRamMirror(address);
       internalRam[addressIndex] = data;
-    } else if (address < 0x2008 || address == 0x4014) { // PPU Registers
+    } else if (address <= 0x3FFF || address == 0x4014) { // PPU Registers
       writePpuRegister(address, data);
     } else {
       // System.Console.WriteLine("Invalid CPU Memory Write to address: " + address.ToString("X4"));
