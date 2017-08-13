@@ -119,12 +119,10 @@ class Display : Form {
     }
 
     void OnKeyDown(object sender, KeyEventArgs e) {
-        System.Console.WriteLine("Got keydown: " + e.KeyCode);
         setControllerButton(true, e);
     }
 
     void OnKeyUp(object sender, KeyEventArgs e) {
-        System.Console.WriteLine("Got keyup: " + e.KeyCode);
         setControllerButton(false, e);
     }
 
