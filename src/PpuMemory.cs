@@ -24,7 +24,14 @@ public class PpuMemory : Memory {
   }
 
   public ushort getPaletteRamIndex(ushort address) {
-    return (ushort) ((address - 0x3F00) % 32);
+    ushort index = (ushort) ((address - 0x3F00) % 32);
+
+    // Mirror $3F10, $3F14, $3F18, $3fF1C to $3F00
+    if (index >= 16 && ((index - 16) % 4 == 0)) {
+      return 0;
+    } else {
+      return index;
+    }
   }
 
   public override byte read(ushort address) {
