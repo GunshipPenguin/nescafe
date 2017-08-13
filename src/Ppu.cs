@@ -71,6 +71,9 @@ public class Ppu {
   byte x; // Fine X scroll (3 bits)
   byte w; // First or second write toggle (1 bit)
 
+  // PPUDATA buffer
+  byte ppuDataBuffer;
+
   public Ppu(Console console) {
     _cpuMemory = console.cpuMemory;
     _memory = console.ppuMemory;
@@ -598,7 +601,14 @@ public class Ppu {
 
   // $2007
   byte readPpuData() {
-    return _memory.read(v);
+    byte data = _memory.read(v);
+    if (v < 0x3F00) {
+      byte bufferedData = ppuDataBuffer;
+      ppuDataBuffer = data;
+      data = bufferedData;
+    }
+
     v += (ushort) (vRamIncrement);
+    return data;
   }
 }
