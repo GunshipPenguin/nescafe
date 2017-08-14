@@ -1,52 +1,65 @@
 using System;
 
-public class CpuMemory : Memory {
+public class CpuMemory : Memory
+{
   // First 2KB of internal ram
   byte[] internalRam = new byte[2048];
 
   Mapper mapper;
-  Console console;
+  Console _console;
 
-  public CpuMemory(Console console) {
-    mapper = new NromMapper(console.cartridge);
-    this.console = console;
+  public CpuMemory(Console console)
+  {
+    this.mapper = new NromMapper(console.Cartridge);
+    _console = console;
   }
 
   // Return the index in internalRam of the address (handle mirroring)
-  private ushort handleInternalRamMirror(ushort address) {
+  ushort HandleInternalRamMirror(ushort address)
+  {
     return (ushort) (address % 0x800);
   }
 
   // Handles mirroring of PPU register addresses
-  private ushort getPpuRegisterFromAddress(ushort address) {
+  ushort GetPpuRegisterFromAddress(ushort address)
+  {
     // Special case for OAMDMA ($4014) which is not alongside the other registers
-    if (address == 0x4014) {
-      return address;
-    } else {
-      return (ushort) (0x2000 + ((address - 0x2000) % 8));
-    }
+    if (address == 0x4014) return address;
+    else return (ushort) (0x2000 + ((address - 0x2000) % 8));
   }
 
-  private void writePpuRegister(ushort address, byte data) {
-    console.ppu.writeToRegister(getPpuRegisterFromAddress(address), data);
+  void WritePpuRegister(ushort address, byte data)
+  {
+    _console.Ppu.WriteToRegister(GetPpuRegisterFromAddress(address), data);
   }
 
-  private byte readPpuRegister(ushort address) {
-    return console.ppu.readFromRegister(getPpuRegisterFromAddress(address));
+  byte ReadPpuRegister(ushort address)
+  {
+    return _console.Ppu.ReadFromRegister(GetPpuRegisterFromAddress(address));
   }
 
-  public override byte read(ushort address) {
+  public override byte Read(ushort address)
+  {
     byte data;
-    if (address < 0x2000) { // Internal CPU RAM 
-      ushort addressIndex = handleInternalRamMirror(address);
+    if (address < 0x2000) // Internal CPU RAM 
+    { 
+      ushort addressIndex = HandleInternalRamMirror(address);
       data = internalRam[addressIndex];
-    } else if (address <= 0x3FFF) { // PPU Registers
-      data = readPpuRegister(address);
-    } else if (address >= 0x4020) { // Program ROM
-      data = mapper.readAddress(address);
-    } else if (address == 0x4016) {
-      data = console.controller.readControllerOutput();
-    } else {
+    }
+    else if (address <= 0x3FFF) // PPU Registers
+    { 
+      data = ReadPpuRegister(address);
+    }
+    else if (address >= 0x4020) // Handled by mapper (PRG rom, CHR rom/ram etc.)
+    { 
+      data = mapper.ReadAddress(address);
+    }
+    else if (address == 0x4016) // Controller
+    {
+      data = _console.Controller.ReadControllerOutput();
+    }
+    else // Invalid Read
+    {
       data = 0;
       // System.Console.WriteLine("Invalid CPU Memory Read from address: " + address.ToString("X4"));
     }
@@ -54,15 +67,23 @@ public class CpuMemory : Memory {
     return data;
   }
 
-    public override void write(ushort address, byte data) {
-    if (address < 0x2000) { // Internal CPU RAM 
-      ushort addressIndex = handleInternalRamMirror(address);
+  public override void Write(ushort address, byte data)
+  {
+    if (address < 0x2000) // Internal CPU RAM
+    {
+      ushort addressIndex = HandleInternalRamMirror(address);
       internalRam[addressIndex] = data;
-    } else if (address <= 0x3FFF || address == 0x4014) { // PPU Registers
-      writePpuRegister(address, data);
-    } else if (address == 0x4016) {
-      console.controller.writeControllerInput(data);
-    } else {
+    }
+    else if (address <= 0x3FFF || address == 0x4014) // PPU Registers
+    {
+      WritePpuRegister(address, data);
+    }
+    else if (address == 0x4016) // Controller
+    {
+      _console.Controller.WriteControllerInput(data);
+    }
+    else // Invalid Write
+    {
       // System.Console.WriteLine("Invalid CPU Memory Write to address: " + address.ToString("X4"));
     }
   }

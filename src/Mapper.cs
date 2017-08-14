@@ -1,5 +1,6 @@
-abstract class Mapper {
+abstract class Mapper
+{
   protected Cartridge _cartridge;
 
-  public abstract byte readAddress(ushort address);
+  public abstract byte ReadAddress(ushort address);
 }

@@ -4,60 +4,148 @@ using System.Drawing.Imaging;
 using System.Threading;
 using System.Diagnostics;
 
-public class Console {
-  public Cpu cpu;
-  public CpuMemory cpuMemory;
+public class Console
+{
+  Cpu _cpu;
+  public Cpu Cpu 
+  {
+    get
+    {
+      return _cpu;
+    }
+    set 
+    {
+      _cpu = value;
+    }
+  }
 
-  public Ppu ppu;
-  public PpuMemory ppuMemory;
+  CpuMemory _cpuMemory;
+  public CpuMemory CpuMemory
+  {
+    get
+    {
+      return _cpuMemory;
+    }
+    set
+    {
+      _cpuMemory = value;
+    }
+  }
 
-  public Cartridge cartridge;
+  Ppu _ppu;
+  public Ppu Ppu
+  {
+    get
+    {
+      return _ppu;
+    }
+    set
+    {
+      _ppu = value;
+    }
+  }
 
-  public Action<byte[]> drawAction;
+  PpuMemory _ppuMemory;
+  public PpuMemory PpuMemory
+  {
+    get
+    {
+      return _ppuMemory;
+    }
+    set
+    {
+      _ppuMemory = value;
+    }
+  }
 
-  public Controller controller;
+  Cartridge _cartridge;
+  public Cartridge Cartridge
+  {
+    get
+    {
+      return _cartridge;
+    }
+    set
+    {
+      _cartridge = value;
+    }
+  }
+
+  Action<byte[]> _drawAction;
+  public Action<byte[]> DrawAction
+  {
+    get
+    {
+      return _drawAction;
+    }
+    set
+    {
+      _drawAction = value;
+    }
+  }
+
+  Controller _controller;
+  public Controller Controller
+  {
+    get
+    {
+      return _controller;
+    }
+    set
+    {
+      _controller = value;
+    }
+  }
 
   bool frameEvenOdd;
 
-  public Console(Cartridge cartridge) {
-    this.cartridge = cartridge;
+  public Console(Cartridge cartridge)
+  {
+    this.Cartridge = cartridge;
 
-    cpuMemory = new CpuMemory(this);
-    ppuMemory = new PpuMemory(this);
+    CpuMemory = new CpuMemory(this);
+    PpuMemory = new PpuMemory(this);
 
-    controller = new Controller();
+    Controller = new Controller();
 
     frameEvenOdd = false;
 
-    cpu = new Cpu(this);
-    ppu = new Ppu(this);
+    Cpu = new Cpu(this);
+    Ppu = new Ppu(this);
   }
 
-  public void drawFrame() {
-    drawAction(ppu.getScreen());
+  public void drawFrame()
+  {
+    DrawAction(Ppu.BitmapData);
     frameEvenOdd = !frameEvenOdd;
   }
 
-  void goUntilFrame() {
+  void goUntilFrame()
+  {
     bool orig = frameEvenOdd;
 
-    while (orig == frameEvenOdd) {
-      int cpuCycles = cpu.step();
+    while (orig == frameEvenOdd)
+    {
+      int cpuCycles = Cpu.Step();
 
       // 3 PPU cycles for each CPU cycle
-      for (int i=0;i<cpuCycles*3;i++) {
-        ppu.step();
+      for (int i=0;i<cpuCycles*3;i++)
+      {
+        Ppu.Step();
       }
     }
   }
 
-  public void start() {
-    byte[] bitmapData = ppu.BitmapData;
-    drawAction(ppu.getScreen());
+  public void Start()
+  {
+    byte[] bitmapData = Ppu.BitmapData;
+    DrawAction(Ppu.BitmapData);
 
     
-    while (true) {
-      for (int i=0;i<60;i++) {
+    while (true)
+    {
+      for (int i=0;i<60;i++)
+      {
         Stopwatch frameWatch = Stopwatch.StartNew();
         goUntilFrame();
         frameWatch.Stop();

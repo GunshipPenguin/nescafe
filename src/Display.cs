@@ -5,11 +5,13 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Threading;
 
-class Display : Form {
-    Bitmap frame;
-    Console console;
+class Display : Form
+{
+    Bitmap _frame;
+    Console _console;
 
-    public Display(Console console) {
+    public Display(Console console)
+    {
         Text = "Nes Emulator";
         Size = new Size(512, 480);
         ResizeRedraw = true;
@@ -20,11 +22,11 @@ class Display : Form {
         KeyDown += new KeyEventHandler(OnKeyDown);
         KeyUp += new KeyEventHandler(OnKeyUp);
 
-        frame = new Bitmap(256, 240, PixelFormat.Format8bppIndexed);
+        _frame = new Bitmap(256, 240, PixelFormat.Format8bppIndexed);
         initPalette();
 
-        this.console = console;
-        console.drawAction = draw;
+        this._console = console;
+        _console.DrawAction = draw;
 
         Thread nesThread = new Thread(new ThreadStart(startNes));
         nesThread.IsBackground = true;
@@ -32,8 +34,9 @@ class Display : Form {
         nesThread.Start();
     }
 
-    void initPalette() {
-        ColorPalette palette = frame.Palette;
+    void initPalette()
+    {
+        ColorPalette palette = _frame.Palette;
         palette.Entries[0x0] = Color.FromArgb(84,84,84);
         palette.Entries[0x1] = Color.FromArgb(0,30,116);
         palette.Entries[0x2] = Color.FromArgb(8,16,144);
@@ -99,56 +102,62 @@ class Display : Form {
         palette.Entries[0x3e] = Color.FromArgb(0,0,0);
         palette.Entries[0x3f] = Color.FromArgb(0,0,0);
         
-        frame.Palette = palette;
+        _frame.Palette = palette;
     }
 
-    void startNes() {
-        console.start();
+    void startNes()
+    {
+        _console.Start();
     }
 
-    unsafe void draw(byte[] screen) {
-        BitmapData frameData = frame.LockBits(new Rectangle(0, 0, 256, 240), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+    unsafe void draw(byte[] screen) 
+    {
+        BitmapData _frameData = _frame.LockBits(new Rectangle(0, 0, 256, 240), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
 
-        byte* ptr = (byte*) frameData.Scan0;
+        byte* ptr = (byte*) _frameData.Scan0;
         for (int i=0;i<256*240;i++) {
             ptr[i] = screen[i];
         }
-        frame.UnlockBits(frameData);
+        _frame.UnlockBits(_frameData);
 
         Invalidate();
     }
 
-    void OnKeyDown(object sender, KeyEventArgs e) {
+    void OnKeyDown(object sender, KeyEventArgs e)
+    {
         setControllerButton(true, e);
     }
 
-    void OnKeyUp(object sender, KeyEventArgs e) {
+    void OnKeyUp(object sender, KeyEventArgs e)
+    {
         setControllerButton(false, e);
     }
 
-    void setControllerButton(bool state, KeyEventArgs e) {
+    void setControllerButton(bool state, KeyEventArgs e)
+    {
         switch(e.KeyCode) {
-            case Keys.Z: console.controller.setButtonState(Controller.Button.A, state);
+            case Keys.Z: _console.Controller.setButtonState(Controller.Button.A, state);
                 break;
-            case Keys.X: console.controller.setButtonState(Controller.Button.B, state);
+            case Keys.X: _console.Controller.setButtonState(Controller.Button.B, state);
                 break;
-            case Keys.Left: console.controller.setButtonState(Controller.Button.Left, state);
+            case Keys.Left: _console.Controller.setButtonState(Controller.Button.Left, state);
                 break;
-            case Keys.Right: console.controller.setButtonState(Controller.Button.Right, state);
+            case Keys.Right: _console.Controller.setButtonState(Controller.Button.Right, state);
                 break;
-            case Keys.Up: console.controller.setButtonState(Controller.Button.Up, state);
+            case Keys.Up: _console.Controller.setButtonState(Controller.Button.Up, state);
                 break;
-            case Keys.Down: console.controller.setButtonState(Controller.Button.Down, state);
+            case Keys.Down: _console.Controller.setButtonState(Controller.Button.Down, state);
                 break;
-            case Keys.Q: console.controller.setButtonState(Controller.Button.Start, state);
+            case Keys.Q: _console.Controller.setButtonState(Controller.Button.Start, state);
                 break;
-            case Keys.W: console.controller.setButtonState(Controller.Button.Select, state);
+            case Keys.W: _console.Controller.setButtonState(Controller.Button.Select, state);
                 break;
         }
     }
 
-    void OnPaint(object sender, PaintEventArgs e) {
+    void OnPaint(object sender, PaintEventArgs e)
+    {
         e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-        e.Graphics.DrawImage(frame, 0, 0, Size.Width, Size.Height);
+        e.Graphics.DrawImage(_frame, 0, 0, Size.Width, Size.Height);
     }
 }

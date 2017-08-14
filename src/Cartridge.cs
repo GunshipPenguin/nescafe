@@ -1,82 +1,108 @@
 using System.IO;
 using System;
 
-public class Cartridge {
-  const int HEADER_MAGIC = 0x1a53454e;
+public class Cartridge
+{
+  const int HeaderMagic = 0x1a53454e;
 
   // Flags
-  const uint cartridgeContainsTrainerFlag = 1<<3;
-  const uint verticalVramMirroringFlag = 1<<0;
+  const uint TrainerFlag = 1<<3;
+  const uint VerticalVramMirrorFlag = 1<<0;
 
-  byte[] prgRom;
-  byte[] chrRom;
+  byte[] _prgRom;
+  byte[] _chrRom;
 
-  public int prgRomBanks;
-  public int chrRomBanks;
+  int _prgRomBanks;
+  public int PrgRomBanks
+  {
+    get
+    {
+      return _prgRomBanks;
+    }
+  }
+  int _chrRomBanks;
+  public int ChrRomBanks
+  {
+    get
+    {
+      return _chrRomBanks;
+    }
+  }
 
-  public bool verticalVramMirroring;
+  bool _verticalVramMirroring;
+  public bool VerticalVramMirroring
+  {
+    get
+    {
+      return _verticalVramMirroring;
+    }
+  }
 
-  int prgRamSize;
+  int _prgRamSize;
 
-  int flags6;
-  int flags7;
-  int flags9;
+  int _flags6;
+  int _flags7;
+  int _flags9;
 
-  public Cartridge (string path) {
+  public Cartridge (string path)
+  {
     FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read);
     BinaryReader reader = new BinaryReader(stream);
-    parseHeader(reader);
-    loadPrgRom(reader);
-    loadChrRom(reader);
+    ParseHeader(reader);
+    LoadPrgRom(reader);
+    LoadChrRom(reader);
   }
 
-  public byte readPrgRom(ushort address) {
-    return prgRom[address];
+  public byte ReadPrgRom(ushort address)
+  {
+    return _prgRom[address];
   }
 
-  public byte readChrRom(ushort address) {
-    return chrRom[address];
+  public byte ReadChrRom(ushort address)
+  {
+    return _chrRom[address];
   }
 
-  private void loadPrgRom(BinaryReader reader) {
-    // Add 512 byte trainer offset (if present as specified in flags6)
-    int prgRomOffset = ((flags6 & cartridgeContainsTrainerFlag) == 0) ? 16 : 16 + 512;
+  void LoadPrgRom(BinaryReader reader)
+  {
+    // Add 512 byte trainer offset (if present as specified in _flags6)
+    int _prgRomOffset = ((_flags6 & TrainerFlag) == 0) ? 16 : 16 + 512;
 
-    reader.BaseStream.Seek(prgRomOffset, SeekOrigin.Begin);
+    reader.BaseStream.Seek(_prgRomOffset, SeekOrigin.Begin);
 
-    prgRom = new byte[prgRomBanks * 16384];
-    reader.Read(prgRom, 0, prgRomBanks * 16384);
+    _prgRom = new byte[_prgRomBanks * 16384];
+    reader.Read(_prgRom, 0, _prgRomBanks * 16384);
   }
 
-  private void loadChrRom(BinaryReader reader) {
-    chrRom = new byte[chrRomBanks * 8192];    
-    reader.Read(chrRom, 0, chrRomBanks * 8192);
+  void LoadChrRom(BinaryReader reader)
+  {
+    _chrRom = new byte[_chrRomBanks * 8192];    
+    reader.Read(_chrRom, 0, _chrRomBanks * 8192);
   }
 
-  private void parseHeader(BinaryReader reader) {
+  void ParseHeader(BinaryReader reader)
+  {
     // Verify magic number
     uint magicNum = reader.ReadUInt32();
-    if (magicNum != HEADER_MAGIC) {
-      throw new Exception("Magic number in header invalid");
-    }
+    if (magicNum != HeaderMagic) throw new Exception("Magic number in header invalid");
 
     // Size of PRG ROM
-    prgRomBanks = reader.ReadByte();
+    _prgRomBanks = reader.ReadByte();
 
     // Size of CHR ROM
-    chrRomBanks = reader.ReadByte();
+    _chrRomBanks = reader.ReadByte();
 
     // Flags 6
-    flags6 = reader.ReadByte();
-    verticalVramMirroring = (flags6 & verticalVramMirroringFlag) != 0;
+    _flags6 = reader.ReadByte();
+    _verticalVramMirroring = (_flags6 & VerticalVramMirrorFlag) != 0;
 
     // Flags 7
-    flags7 = reader.ReadByte();
+    _flags7 = reader.ReadByte();
 
     // Size of PRG RAM
-    prgRamSize = reader.ReadByte();
+    _prgRamSize = reader.ReadByte();
 
     // Flags 9
-    flags9 = reader.ReadByte();
+    _flags9 = reader.ReadByte();
   }
 }
