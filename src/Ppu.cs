@@ -2,18 +2,7 @@ using System;
 
 public class Ppu
 {
-  byte[] _bitmapData;
-  public byte[] BitmapData
-  {
-    get
-    {
-      return _bitmapData;
-    }
-    set
-    {
-      _bitmapData = value;
-    }
-  }
+  public byte[] BitmapData { get; }
 
   PpuMemory _memory;
   Console _console;
@@ -84,7 +73,7 @@ public class Ppu
   {
     _memory = console.PpuMemory;
     _console = console;
-    _bitmapData = new byte[256 * 240];
+    BitmapData = new byte[256 * 240];
 
     _scanline = 0;
     _cycle = 0;
@@ -240,7 +229,7 @@ public class Ppu
     byte backgroundPixel = GetBackgroundPixelColor();
     byte spritePixel = GetSpritePixelColor();
 
-    _bitmapData[pixelY * 256 + pixelX] = spritePixel == 0 ? backgroundPixel :spritePixel;
+    BitmapData[pixelY * 256 + pixelX] = spritePixel == 0 ? backgroundPixel :spritePixel;
   }
 
   int CoarseX()

@@ -12,22 +12,9 @@ public class Cartridge
   byte[] _prgRom;
   byte[] _chrRom;
 
-  int _prgRomBanks;
-  public int PrgRomBanks
-  {
-    get
-    {
-      return _prgRomBanks;
-    }
-  }
-  int _chrRomBanks;
-  public int ChrRomBanks
-  {
-    get
-    {
-      return _chrRomBanks;
-    }
-  }
+  public int PrgRomBanks { get; set; }
+
+  public int ChrRomBanks { get; set; }
 
   bool _verticalVramMirroring;
   public bool VerticalVramMirroring
@@ -70,14 +57,14 @@ public class Cartridge
 
     reader.BaseStream.Seek(_prgRomOffset, SeekOrigin.Begin);
 
-    _prgRom = new byte[_prgRomBanks * 16384];
-    reader.Read(_prgRom, 0, _prgRomBanks * 16384);
+    _prgRom = new byte[PrgRomBanks * 16384];
+    reader.Read(_prgRom, 0, PrgRomBanks * 16384);
   }
 
   void LoadChrRom(BinaryReader reader)
   {
-    _chrRom = new byte[_chrRomBanks * 8192];    
-    reader.Read(_chrRom, 0, _chrRomBanks * 8192);
+    _chrRom = new byte[ChrRomBanks * 8192];    
+    reader.Read(_chrRom, 0, ChrRomBanks * 8192);
   }
 
   void ParseHeader(BinaryReader reader)
@@ -87,10 +74,10 @@ public class Cartridge
     if (magicNum != HeaderMagic) throw new Exception("Magic number in header invalid");
 
     // Size of PRG ROM
-    _prgRomBanks = reader.ReadByte();
+    PrgRomBanks = reader.ReadByte();
 
     // Size of CHR ROM
-    _chrRomBanks = reader.ReadByte();
+    ChrRomBanks = reader.ReadByte();
 
     // Flags 6
     _flags6 = reader.ReadByte();

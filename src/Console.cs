@@ -6,98 +6,16 @@ using System.Diagnostics;
 
 public class Console
 {
-  Cpu _cpu;
-  public Cpu Cpu 
-  {
-    get
-    {
-      return _cpu;
-    }
-    set 
-    {
-      _cpu = value;
-    }
-  }
+  public readonly Cpu Cpu;
+  public readonly CpuMemory CpuMemory;
+  public readonly Ppu Ppu;
+  public readonly PpuMemory PpuMemory;
+  public readonly Cartridge Cartridge;
+  public readonly Controller Controller;
 
-  CpuMemory _cpuMemory;
-  public CpuMemory CpuMemory
-  {
-    get
-    {
-      return _cpuMemory;
-    }
-    set
-    {
-      _cpuMemory = value;
-    }
-  }
+  public Action<byte[]> DrawAction { get; set; }
 
-  Ppu _ppu;
-  public Ppu Ppu
-  {
-    get
-    {
-      return _ppu;
-    }
-    set
-    {
-      _ppu = value;
-    }
-  }
-
-  PpuMemory _ppuMemory;
-  public PpuMemory PpuMemory
-  {
-    get
-    {
-      return _ppuMemory;
-    }
-    set
-    {
-      _ppuMemory = value;
-    }
-  }
-
-  Cartridge _cartridge;
-  public Cartridge Cartridge
-  {
-    get
-    {
-      return _cartridge;
-    }
-    set
-    {
-      _cartridge = value;
-    }
-  }
-
-  Action<byte[]> _drawAction;
-  public Action<byte[]> DrawAction
-  {
-    get
-    {
-      return _drawAction;
-    }
-    set
-    {
-      _drawAction = value;
-    }
-  }
-
-  Controller _controller;
-  public Controller Controller
-  {
-    get
-    {
-      return _controller;
-    }
-    set
-    {
-      _controller = value;
-    }
-  }
-
-  bool frameEvenOdd;
+  bool _frameEvenOdd;
 
   public Console(Cartridge cartridge)
   {
@@ -106,25 +24,25 @@ public class Console
     CpuMemory = new CpuMemory(this);
     PpuMemory = new PpuMemory(this);
 
-    Controller = new Controller();
-
-    frameEvenOdd = false;
-
     Cpu = new Cpu(this);
     Ppu = new Ppu(this);
+
+    Controller = new Controller();
+
+    _frameEvenOdd = false;
   }
 
   public void drawFrame()
   {
     DrawAction(Ppu.BitmapData);
-    frameEvenOdd = !frameEvenOdd;
+    _frameEvenOdd = !_frameEvenOdd;
   }
 
   void goUntilFrame()
   {
-    bool orig = frameEvenOdd;
+    bool orig = _frameEvenOdd;
 
-    while (orig == frameEvenOdd)
+    while (orig == _frameEvenOdd)
     {
       int cpuCycles = Cpu.Step();
 
