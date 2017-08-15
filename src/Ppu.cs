@@ -536,7 +536,7 @@ public class Ppu
     _nmiOutput = (byte) ((data >> 7) & 1);
 
     // Set values based off flags
-    _baseNametableAddresss = (ushort) (0x2000 + 0x4000*_flagBaseNametableAddr);
+    _baseNametableAddresss = (ushort) (0x2000 + 0x400*_flagBaseNametableAddr);
     _vRamIncrement = (_flagVRamIncrement == 0) ? 1 : 32;
     _bgPatternTableAddress = (ushort) (_flagBgPatternTableAddr == 0 ? 0x0000 : 0x1000);
     _spritePatternTableAddress = (ushort) (0x1000 * _flagSpritePatternTableAddr);
