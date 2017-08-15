@@ -16,14 +16,7 @@ public class Cartridge
 
   public int ChrRomBanks { get; set; }
 
-  bool _verticalVramMirroring;
-  public bool VerticalVramMirroring
-  {
-    get
-    {
-      return _verticalVramMirroring;
-    }
-  }
+  public bool VerticalVramMirroring { get; set; }
 
   int _prgRamSize;
 
@@ -81,7 +74,7 @@ public class Cartridge
 
     // Flags 6
     _flags6 = reader.ReadByte();
-    _verticalVramMirroring = (_flags6 & VerticalVramMirrorFlag) != 0;
+    VerticalVramMirroring = (_flags6 & VerticalVramMirrorFlag) != 0;
 
     // Flags 7
     _flags7 = reader.ReadByte();
