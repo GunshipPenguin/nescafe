@@ -12,7 +12,7 @@ class Display : Form
 
     public Display(Console console)
     {
-        Text = "Nes Emulator";
+        Text = "NEScafé";
         Size = new Size(512, 480);
         ResizeRedraw = true;
         
