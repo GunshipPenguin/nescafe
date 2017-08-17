@@ -41,7 +41,6 @@ public class Console
   void goUntilFrame()
   {
     bool orig = _frameEvenOdd;
-
     while (orig == _frameEvenOdd)
     {
       int cpuCycles = Cpu.Step();
@@ -69,7 +68,6 @@ public class Console
         frameWatch.Stop();
 
         long timeTaken = frameWatch.ElapsedMilliseconds;
-
         Thread.Sleep((int) ((1000.0/60) - timeTaken));
       }
     }
