@@ -49,7 +49,7 @@ public class Cartridge
         Mapper = new NromMapper(this);
         break;
       default:
-        System.Console.WriteLine("Mapper is not supported");
+        System.Console.WriteLine(" Mapper is not supported");
         Invalid = true;
         break;
     }
