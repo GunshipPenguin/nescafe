@@ -75,7 +75,7 @@ class Ui : Form
             {
                 MessageBox.Show("Could not load cartridge, see standard output for details");
             }
-        }   
+        }
     }
 
     void LaunchGitHubLink(object sender, EventArgs e)
@@ -94,10 +94,6 @@ class Ui : Form
         fileMenu.DropDownItems.Add(fileLoadMenu);
 
         ms.Items.Add(fileMenu);
-
-        // Emulation menu
-        var emuMenu = new ToolStripMenuItem("Emulation");
-        ms.Items.Add(emuMenu);
 
         // Help menu
         var helpMenu = new ToolStripMenuItem("Help");
