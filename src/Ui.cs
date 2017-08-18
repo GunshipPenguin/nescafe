@@ -16,8 +16,8 @@ class Ui : Form
     {
         Text = "NEScafé";
         Size = new Size(512, 480);
-        ResizeRedraw = true;
-    
+        FormBorderStyle = FormBorderStyle.FixedSingle;
+
         CenterToScreen();
         InitMenus();
 
