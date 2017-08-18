@@ -389,7 +389,8 @@ public class Ppu
     _tileShiftReg |= (data << 32);
   }
 
-  void UpdateCounters() {
+  void UpdateCounters()
+  {
     // Trigger an NMI at the start of _scanline 241 if VBLANK NMI's are enabled
     if (_scanline == 241 && _cycle == 1)
     {
@@ -449,7 +450,8 @@ public class Ppu
     bool preRenderScanline = _scanline == 261;
 
     // nmiOccurred flag cleared on prerender scanline at cycle 1
-    if (preRenderScanline && _cycle == 1) {
+    if (preRenderScanline && _cycle == 1)
+    {
       _nmiOccurred = 0;
       _flagSpriteOverflow = 0;
     }
@@ -460,13 +462,6 @@ public class Ppu
 
     if (renderingEnabled)
     {
-
-      // if (_scanline == 24 && _cycle == 1) {
-      //   ;
-      //   System.Console.WriteLine(f.ToString() + " " + CoarseX().ToString());
-      // }
-
-
       if (renderCycle && renderScanline) RenderPixel();
 
       // Read rendering data into internal latches and update _tileShiftReg
