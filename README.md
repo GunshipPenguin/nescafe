@@ -15,6 +15,14 @@ So named since almost all of the work on this was done in various cafés while d
     </tr>
 </table>
 
+# Controls
+
+- Arrow Keys = up,down,left,right
+- Z = A
+- X = B
+- Q = Start
+- W = Select
+
 # License
 
 [MIT](https://github.com/GunshipPenguin/nescafe/blob/master/LICENSE) © Rhys Rustad-Elliott
