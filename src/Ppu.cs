@@ -7,10 +7,10 @@ public class Ppu
   PpuMemory _memory;
   Console _console;
 
-  // OAM
+  // OAM / Sprite rendering
   byte[] _oam;
-  byte[] _secondaryOam;
   ushort _oamAddr;
+  byte[] _sprites;
   int _numSprites;
 
   int _scanline;
@@ -90,7 +90,7 @@ public class Ppu
     f = 0;
 
     _oam = new byte[256];
-    _secondaryOam = new byte[32];
+    _sprites = new byte[32];
   }
 
   byte LookupBackgroundColor(byte data)
@@ -120,8 +120,11 @@ public class Ppu
     return _memory.Read(paletteAddress);
   }
 
-  byte LookupSpriteColor(int paletteNum, int colorNum)
+  byte LookupSpriteColor(byte data)
   {
+    int colorNum = data & 0x3;
+    int paletteNum = (data >> 2) & 0x3;
+
     // Special case for universal background color
     if (colorNum == 0) return _memory.Read(0x3F00);
 
@@ -144,46 +147,47 @@ public class Ppu
     return _memory.Read(paletteAddress);
   }
 
-  byte GetSpritePixelColor()
+  byte GetSpritePixelData(out int spriteIndex)
   {
+    spriteIndex = 0;
     if (_flagShowSprites == 0) return 0;
 
     int xPos = _cycle - 1;
     int yPos = _scanline - 1;
-    byte colorValue = 0;
 
     // Get sprite pattern bitfield
     for(int i=0;i<_numSprites*4;i+=4)
     {
-      int spriteXLeft = _secondaryOam[i + 3];
+      int spriteXLeft = _sprites[i + 3];
       int offset = xPos - spriteXLeft;
 
       if (offset <= 7 && offset >= 0)
       {
         // Found intersecting sprite
-        byte patternIndex = _secondaryOam[i + 1];
-        int yOffset = yPos - _secondaryOam[i];
+        byte patternIndex = _sprites[i + 1];
+        int yOffset = yPos - _sprites[i];
 
         ushort patternAddress = (ushort) (_spritePatternTableAddress + (patternIndex * 16));
       
-        bool flipHoriz = (_secondaryOam[i + 2] & 0x40) != 0;
-        bool flipVert = (_secondaryOam[i + 2] & 0x80) != 0;
+        bool flipHoriz = (_sprites[i + 2] & 0x40) != 0;
+        bool flipVert = (_sprites[i + 2] & 0x80) != 0;
         int colorNum = GetPatternPixel(patternAddress, offset, yOffset, flipHoriz, flipVert);
 
         // Handle transparent sprites
         if (colorNum == 0)
         {
-          return 0;
-        } 
-        else
+          continue;
+        }
+        else // Non transparent sprite, return data
         {
-          byte paletteNum = (byte) (_secondaryOam[i + 2] & 0x03);
-          return LookupSpriteColor(paletteNum, colorNum);
+          byte paletteNum = (byte) (_sprites[i + 2] & 0x03);
+          spriteIndex = i/4;
+          return (byte) (((paletteNum << 2) | colorNum) & 0xF);
         }
       }
     }
 
-    return colorValue;
+    return 0x00; // No sprite
   }
 
   void CopyHorizPositionData()
@@ -278,11 +282,10 @@ public class Ppu
   {
     _numSprites = 0;
     int yPos = _scanline;
-    int _secondaryOamIndex = 0;
 
     for (int i=0;i<_oam.Length;i+=4)
     {
-      if (_secondaryOamIndex == 32)
+      if (_numSprites == 8)
       {
         _flagSpriteOverflow = 1;
         break;
@@ -291,18 +294,14 @@ public class Ppu
       byte spriteYTop = _oam[i];
 
       // spriteYTop == 0 indicates that this is not a sprite (ie. no more sprites after)
-      if (spriteYTop == 0)
-      {
-        break;
-      }
+      if (spriteYTop == 0) break;
 
       int offset = yPos - spriteYTop;
 
-      // If this sprite is on the next _scanline, copy it to secondary _oam
+      // If this sprite is on the next scanline, copy it to the _sprites array for rendering
       if (offset <= 7 && offset >= 0)
       {
-        Array.Copy(_oam, i, _secondaryOam, _secondaryOamIndex, 4);
-        _secondaryOamIndex += 4;
+        Array.Copy(_oam, i, _sprites, _numSprites*4, 4);
         _numSprites ++;
       }
     }
@@ -312,14 +311,30 @@ public class Ppu
   {
     // Get pixel data (4 bits of tile shift register as specified by x)
     byte bgPixelData = (byte) ((_tileShiftReg >> (x * 4)) & 0xF);
-    byte spritePixelData = GetSpritePixelColor();
+
+    int spriteIndex;
+    byte spritePixelData = GetSpritePixelData(out spriteIndex);
+
+    int bgColorNum = bgPixelData & 0x03;
+    int spriteColorNum = spritePixelData & 0x03;
 
     byte color;
-    if (spritePixelData != 0)
+
+    if (bgColorNum == 0)
     {
-      color = spritePixelData;
-    } else {
-      color = LookupBackgroundColor(bgPixelData);
+      if (spriteColorNum == 0) color = LookupBackgroundColor(bgPixelData);
+      else color = LookupSpriteColor(spritePixelData);
+    }
+    else
+    {
+      if (spriteColorNum == 0) color = LookupBackgroundColor(bgPixelData);
+      else // Both pixels opaque, choose depending on sprite priority
+      {
+        // Get sprite priority
+        int priority = (_sprites[(spriteIndex * 4) + 2] >> 5) & 1;
+        if (priority == 1) color = LookupBackgroundColor(bgPixelData);
+        else color = LookupSpriteColor(spritePixelData);
+      }
     }
 
     BitmapData[_scanline * 256 + (_cycle-1)] = color;
