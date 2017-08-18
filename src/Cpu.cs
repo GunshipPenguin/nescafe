@@ -130,17 +130,6 @@ public class Cpu
   {
     _memory = console.CpuMemory;
 
-    // Set up startup state
-    PC = _memory.Read16(0xFFFC);
-    S = 0xFD;
-    A = 0;
-    X = 0;
-    Y = 0;
-    setProcessorFlags((byte) 0x24);
-    _cycles = 0;
-
-    nmiInterrupt = false;
-
     _instructions = new Instruction[256] {
   //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
       brk, ora, ___, ___, ___, ora, asl, ___, php, ora, asl, ___, ___, ora, asl, ___, // 0
@@ -160,6 +149,18 @@ public class Cpu
       cpx, sbc, ___, ___, cpx, sbc, inc, ___, inx, sbc, nop, ___, cpx, sbc, inc, ___, // E
       beq, sbc, ___, ___, ___, sbc, inc, ___, sed, sbc, ___, ___, ___, sbc, inc, ___  // F
     };
+  }
+
+  public void Reset()
+  {
+    PC = _memory.Read16(0xFFFC);
+    S = 0xFD;
+    A = 0;
+    X = 0;
+    Y = 0;
+    setProcessorFlags((byte) 0x24);
+    _cycles = 0;
+    nmiInterrupt = false;
   }
 
   public void TriggerNmi() 
@@ -706,7 +707,8 @@ public class Cpu
     setZn(A);
   }
 
-  void lda(AddressMode mode, ushort address) {
+  void lda(AddressMode mode, ushort address)
+  {
     A = _memory.Read(address);
     setZn(A);
   }

@@ -78,7 +78,16 @@ public class Ppu
   {
     _memory = console.PpuMemory;
     _console = console;
+
     BitmapData = new byte[256 * 240];
+
+    _oam = new byte[256];
+    _sprites = new byte[32];
+  }
+
+  public void Reset()
+  {
+    Array.Clear(BitmapData, 0, BitmapData.Length);
 
     _scanline = 240;
     _cycle = 340;
@@ -89,8 +98,8 @@ public class Ppu
     w = 0;
     f = 0;
 
-    _oam = new byte[256];
-    _sprites = new byte[32];
+    Array.Clear(_oam, 0, _oam.Length);
+    Array.Clear(_sprites, 0, _sprites.Length);
   }
 
   byte LookupBackgroundColor(byte data)
@@ -411,7 +420,7 @@ public class Ppu
         f ^= 1;
         _scanline = 0;
         _cycle = -1;
-        _console.drawFrame();
+        _console.DrawFrame();
         return;
       }
     }
@@ -426,7 +435,7 @@ public class Ppu
         f ^= 1;
         _scanline = 0;
         _cycle = -1;
-        _console.drawFrame();
+        _console.DrawFrame();
       }
       else // Not on last scanline
       {

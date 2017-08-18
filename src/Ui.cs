@@ -5,36 +5,110 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Threading;
 
-class Display : Form
+class Ui : Form
 {
     Bitmap _frame;
     Console _console;
 
-    public Display(Console console)
+    Thread _nesThread;
+
+    public Ui()
     {
         Text = "NEScafé";
         Size = new Size(512, 480);
         ResizeRedraw = true;
-        
-        Paint += new PaintEventHandler(OnPaint);
+    
         CenterToScreen();
+        InitMenus();
+
+        this._console = new Console();
+        _console.DrawAction = Draw;
+
+        _frame = new Bitmap(256, 240, PixelFormat.Format8bppIndexed);
+        InitPalette();
+
+        Paint += new PaintEventHandler(OnPaint);
 
         KeyDown += new KeyEventHandler(OnKeyDown);
         KeyUp += new KeyEventHandler(OnKeyUp);
 
-        _frame = new Bitmap(256, 240, PixelFormat.Format8bppIndexed);
-        initPalette();
-
-        this._console = console;
-        _console.DrawAction = draw;
-
-        Thread nesThread = new Thread(new ThreadStart(startNes));
-        nesThread.IsBackground = true;
-
-        nesThread.Start();
+        _nesThread = new Thread(new ThreadStart(startNes));
+        _nesThread.IsBackground = true;
     }
 
-    void initPalette()
+    void StopConsole()
+    {
+        _console.Stop = true;
+
+        if (_nesThread.ThreadState == ThreadState.Running)
+        {
+            _nesThread.Join();
+        }
+    }
+
+    void StartConsole()
+    {
+        _nesThread = new Thread(new ThreadStart(startNes));
+        _nesThread.IsBackground = true;
+        _nesThread.Start();
+    }
+
+    void LoadCartridge(object sender, EventArgs e)
+    {
+        StopConsole();
+
+        OpenFileDialog openFileDialog = new OpenFileDialog();
+        openFileDialog.Filter = "NES ROMs | *.nes" ;
+        openFileDialog.RestoreDirectory = true ;
+
+        if (openFileDialog.ShowDialog() == DialogResult.OK)
+        {
+            Cartridge cartridge = new Cartridge(openFileDialog.FileName);
+            _console.LoadCartridge(cartridge);
+            Text = "Nescafé - " + openFileDialog.SafeFileName;
+
+            StartConsole();
+        }   
+    }
+
+    void LaunchGitHubLink(object sender, EventArgs e)
+    {
+        System.Diagnostics.Process.Start("http://www.github.com/GunshipPenguin/nescafe");
+    }
+
+    void InitMenus()
+    {
+        MenuStrip ms = new MenuStrip();
+
+        // File menu
+        var fileMenu = new ToolStripMenuItem("File");
+
+        var fileLoadMenu = new ToolStripMenuItem("Load NES Cartridge", null, new EventHandler(LoadCartridge));
+        fileMenu.DropDownItems.Add(fileLoadMenu);
+
+        ms.Items.Add(fileMenu);
+
+        // Emulation menu
+        var emuMenu = new ToolStripMenuItem("Emulation");
+        ms.Items.Add(emuMenu);
+
+        // Help menu
+        var helpMenu = new ToolStripMenuItem("Help");
+
+        var helpGithubMenu = new ToolStripMenuItem("GitHub", null, new EventHandler(LaunchGitHubLink));
+        helpMenu.DropDownItems.Add(helpGithubMenu);
+
+        ms.Items.Add(helpMenu);
+
+        Controls.Add(ms);
+    }
+
+    void startNes()
+    {
+        _console.Start();
+    }
+
+    void InitPalette()
     {
         ColorPalette palette = _frame.Palette;
         palette.Entries[0x0] = Color.FromArgb(84,84,84);
@@ -105,12 +179,7 @@ class Display : Form
         _frame.Palette = palette;
     }
 
-    void startNes()
-    {
-        _console.Start();
-    }
-
-    unsafe void draw(byte[] screen) 
+    unsafe void Draw(byte[] screen) 
     {
         BitmapData _frameData = _frame.LockBits(new Rectangle(0, 0, 256, 240), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
 
@@ -121,6 +190,12 @@ class Display : Form
         _frame.UnlockBits(_frameData);
 
         Invalidate();
+    }
+
+    void OnPaint(object sender, PaintEventArgs e)
+    {
+        e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+        e.Graphics.DrawImage(_frame, 0, 0, Size.Width, Size.Height);
     }
 
     void OnKeyDown(object sender, KeyEventArgs e)
@@ -153,11 +228,5 @@ class Display : Form
             case Keys.W: _console.Controller.setButtonState(Controller.Button.Select, state);
                 break;
         }
-    }
-
-    void OnPaint(object sender, PaintEventArgs e)
-    {
-        e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-        e.Graphics.DrawImage(_frame, 0, 0, Size.Width, Size.Height);
     }
 }

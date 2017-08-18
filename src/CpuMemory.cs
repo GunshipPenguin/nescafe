@@ -5,13 +5,16 @@ public class CpuMemory : Memory
   // First 2KB of internal ram
   byte[] internalRam = new byte[2048];
 
-  Mapper mapper;
   Console _console;
 
   public CpuMemory(Console console)
   {
-    this.mapper = new NromMapper(console.Cartridge);
     _console = console;
+  }
+
+  public void Reset()
+  {
+    Array.Clear(internalRam, 0, internalRam.Length);
   }
 
   // Return the index in internalRam of the address (handle mirroring)
@@ -52,7 +55,7 @@ public class CpuMemory : Memory
     }
     else if (address >= 0x4020) // Handled by mapper (PRG rom, CHR rom/ram etc.)
     { 
-      data = mapper.ReadAddress(address);
+      data = _console.Mapper.ReadAddress(address);
     }
     else if (address == 0x4016) // Controller
     {

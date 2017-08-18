@@ -1,4 +1,4 @@
-abstract class Mapper
+public abstract class Mapper
 {
   protected Cartridge _cartridge;
 

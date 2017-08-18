@@ -6,11 +6,17 @@ public class PpuMemory : Memory
   byte[] _vRam;
   byte[] _paletteRam;
 
-  public PpuMemory (Console _console)
+  public PpuMemory (Console console)
   {
-    this._console = _console;
+    _console = console;
     _vRam = new byte[2048];
     _paletteRam = new byte[32];
+  }
+
+  public void Reset()
+  {
+    Array.Clear(_vRam, 0, _vRam.Length);
+    Array.Clear(_paletteRam, 0, _paletteRam.Length);
   }
 
   // Gets the index in the vram array of an address accounting for the type of mirroring
