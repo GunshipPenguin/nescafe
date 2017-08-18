@@ -55,7 +55,7 @@ public class CpuMemory : Memory
     }
     else if (address >= 0x4020) // Handled by mapper (PRG rom, CHR rom/ram etc.)
     { 
-      data = _console.Mapper.ReadAddress(address);
+      data = _console.Cartridge.Mapper.ReadAddress(address);
     }
     else if (address == 0x4016) // Controller
     {

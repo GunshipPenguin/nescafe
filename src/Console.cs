@@ -15,12 +15,11 @@ public class Console
   public readonly Controller Controller;
 
   public Cartridge Cartridge { get; set; }
-  public Mapper Mapper { get; set; }
   
   public Action<byte[]> DrawAction { get; set; }
 
   public bool Stop { get; set; }
-
+  
   bool _frameEvenOdd;
 
   public Console()
@@ -38,8 +37,6 @@ public class Console
   {
     Cartridge = cartridge;
 
-    SetMapper();
-
     Cpu.Reset();
     Ppu.Reset();
 
@@ -47,11 +44,6 @@ public class Console
     PpuMemory.Reset();
 
     _frameEvenOdd = false;
-  }
-
-  void SetMapper()
-  {
-    Mapper = new NromMapper(Cartridge);
   }
 
   public void DrawFrame()

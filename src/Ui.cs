@@ -63,11 +63,18 @@ class Ui : Form
 
         if (openFileDialog.ShowDialog() == DialogResult.OK)
         {
+            System.Console.WriteLine("Loading ROM " + openFileDialog.FileName);
             Cartridge cartridge = new Cartridge(openFileDialog.FileName);
-            _console.LoadCartridge(cartridge);
-            Text = "Nescafé - " + openFileDialog.SafeFileName;
-
-            StartConsole();
+            if (!cartridge.Invalid)
+            {
+                _console.LoadCartridge(cartridge);
+                Text = "Nescafé - " + openFileDialog.SafeFileName;
+                StartConsole();
+            }
+            else
+            {
+                MessageBox.Show("Could not load cartridge, see standard output for details");
+            }
         }   
     }
 
@@ -184,7 +191,8 @@ class Ui : Form
         BitmapData _frameData = _frame.LockBits(new Rectangle(0, 0, 256, 240), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
 
         byte* ptr = (byte*) _frameData.Scan0;
-        for (int i=0;i<256*240;i++) {
+        for (int i=0;i<256*240;i++)
+        {
             ptr[i] = screen[i];
         }
         _frame.UnlockBits(_frameData);
@@ -210,7 +218,8 @@ class Ui : Form
 
     void setControllerButton(bool state, KeyEventArgs e)
     {
-        switch(e.KeyCode) {
+        switch(e.KeyCode)
+        {
             case Keys.Z: _console.Controller.setButtonState(Controller.Button.A, state);
                 break;
             case Keys.X: _console.Controller.setButtonState(Controller.Button.B, state);
