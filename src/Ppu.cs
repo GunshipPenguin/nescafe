@@ -330,6 +330,9 @@ public class Ppu
       if (spriteColorNum == 0) color = LookupBackgroundColor(bgPixelData);
       else // Both pixels opaque, choose depending on sprite priority
       {
+        // Set sprite0hit if spriteIndex is 0
+        if (spriteIndex == 0) _flagSpriteZeroHit = 1;
+
         // Get sprite priority
         int priority = (_sprites[(spriteIndex * 4) + 2] >> 5) & 1;
         if (priority == 1) color = LookupBackgroundColor(bgPixelData);
@@ -454,9 +457,9 @@ public class Ppu
     {
       _nmiOccurred = 0;
       _flagSpriteOverflow = 0;
+      _flagSpriteZeroHit = 0;
     }
     
-
     // Evaluate sprites at cycle 257
     if (_cycle == 257 && renderScanline) EvalSprites();
 
@@ -655,9 +658,7 @@ public class Ppu
     byte retVal = 0;
     retVal |= (byte) (_lastRegisterWrite & 0x1F); // Least signifigant 5 bits of last register write
     retVal |= (byte) (_flagSpriteOverflow << 5);
-    
-    // Hardcoded hack just to get SMB working, TODO: Write a proper sprite0hit implementation
-    retVal |= (byte) (((_cycle >= 88 && _scanline >= 29) ? 1 : 0) << 6);
+    retVal |= (byte) (_flagSpriteZeroHit << 6);
     retVal |= (byte) (_nmiOccurred << 7);
 
     // Old status of _nmiOccurred is returned then _nmiOccurred is cleared
