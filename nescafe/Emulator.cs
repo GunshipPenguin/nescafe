@@ -1,9 +1,12 @@
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
-class Emulator
+namespace Nescafe
 {
-    public static void Main()
+    class Emulator
     {
-        Application.Run(new Ui());
+        public static void Main()
+        {
+            Application.Run(new Ui());
+        }
     }
 }

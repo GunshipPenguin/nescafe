@@ -41,8 +41,8 @@
     <Compile Include="Ppu.cs" />
     <Compile Include="PpuMemory.cs" />
     <Compile Include="Ui.cs" />
-    <Compile Include="mappers\NromMapper.cs" />
-    <Compile Include="Mapper.cs" />
+    <Compile Include="Mappers\NromMapper.cs" />
+    <Compile Include="Mappers\Mapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
@@ -50,7 +50,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="mappers\" />
+    <Folder Include="Mappers\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

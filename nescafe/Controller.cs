@@ -1,48 +1,50 @@
-
-public class Controller
+﻿namespace Nescafe
 {
-    public enum Button
+    public class Controller
     {
-        A = 0,
-        B,
-        Select,
-        Start,
-        Up,
-        Down,
-        Left,
-        Right
-    };
+        public enum Button
+        {
+            A = 0,
+            B,
+            Select,
+            Start,
+            Up,
+            Down,
+            Left,
+            Right
+        };
 
-    bool[] _buttonStates;
-    bool _strobe;
+        bool[] _buttonStates;
+        bool _strobe;
 
-    int _currButtonIndex;
+        int _currButtonIndex;
 
-    public Controller()
-    {
-        _buttonStates = new bool[8];
-        _strobe = false;
-    }
+        public Controller()
+        {
+            _buttonStates = new bool[8];
+            _strobe = false;
+        }
 
-    public void setButtonState(Button button, bool state)
-    {
-        _buttonStates[(int)button] = state;
-    }
+        public void setButtonState(Button button, bool state)
+        {
+            _buttonStates[(int)button] = state;
+        }
 
-    public void WriteControllerInput(byte input)
-    {
-        _strobe = (input & 1) == 1;
-        if (_strobe) _currButtonIndex = 0;
-    }
+        public void WriteControllerInput(byte input)
+        {
+            _strobe = (input & 1) == 1;
+            if (_strobe) _currButtonIndex = 0;
+        }
 
-    public byte ReadControllerOutput()
-    {
-        // If out of buttons, return 1
-        if (_currButtonIndex > 7) return 1;
+        public byte ReadControllerOutput()
+        {
+            // If out of buttons, return 1
+            if (_currButtonIndex > 7) return 1;
 
-        bool state = _buttonStates[_currButtonIndex];
-        if (!_strobe) _currButtonIndex++;
+            bool state = _buttonStates[_currButtonIndex];
+            if (!_strobe) _currButtonIndex++;
 
-        return (byte)(state ? 1 : 0);
+            return (byte)(state ? 1 : 0);
+        }
     }
 }
