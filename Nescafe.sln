@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nescafe", "nescafe\nescafe.csproj", "{E6A49F24-ADC5-4008-91A3-6CD13F4C4C50}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nescafe", "nescafe\Nescafe.csproj", "{E6A49F24-ADC5-4008-91A3-6CD13F4C4C50}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8C5EC02B-6B68-42F2-9CF8-51CA6A57528B}"
 EndProject
