@@ -8,10 +8,10 @@ drinking large quantities of coffee.
 <table align="center">
     <tr>
         <td>
-            <img src="https://i.imgur.com/bbaVTxg.gif" width="256px">
+            <img src="https://i.imgur.com/xrJ6Yir.gif" width="256px">
         </td>
         <td>
-            <img src="https://i.imgur.com/iNMi9zC.gif" width="256px">
+            <img src="https://i.imgur.com/rYfov9J.gif" width="256px">
         </td>
     </tr>
 </table>
