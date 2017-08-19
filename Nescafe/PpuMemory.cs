@@ -24,7 +24,6 @@ namespace Nescafe
         // Gets the index in the vram array of an address accounting for the type of mirroring
         public int GetVRamIndex(ushort address)
         {
-            // System.Console.WriteLine("$" + address.ToString("X4"));
             int index = (address - 0x2000) % 0x1000;
             if (_console.Cartridge.VerticalVramMirroring)
             {
@@ -36,7 +35,6 @@ namespace Nescafe
                 if (index > 0x800) index = ((index - 0x800) % 0x400) + 0x400; // In the 2 B regions
                 else index %= 0x400; // In one of the 2 A regions
             }
-            // System.Console.WriteLine(index.ToString() + "i");
             return index;
         }
 
