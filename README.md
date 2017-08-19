@@ -2,7 +2,8 @@
 
 A Nintendo Entertainment System (NES) emulator written in C#.
 
-So named since almost all of the work on this was done in various cafés while drinking large quantities of coffee.
+So named since almost all of the work on this was done in various cafés while 
+drinking large quantities of coffee.
 
 <table align="center">
     <tr>
@@ -14,6 +15,20 @@ So named since almost all of the work on this was done in various cafés while d
         </td>
     </tr>
 </table>
+
+# Building
+
+Compile with Visual Studio or from the command line with:
+
+`msbuild /property:Configuration=Release nescafe.sln`
+
+or with xbuild:
+
+`xbuild /property:Configuration=Release nescafe.sln`
+
+# Loading a ROM
+
+Load an iNES rom using File->Load NES Cartridge
 
 # Controls
 
