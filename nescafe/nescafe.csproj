@@ -37,17 +37,20 @@
     <Compile Include="Cpu.cs" />
     <Compile Include="CpuMemory.cs" />
     <Compile Include="Emulator.cs" />
-    <Compile Include="Mapper.cs" />
     <Compile Include="Memory.cs" />
-    <Compile Include="NromMapper.cs" />
     <Compile Include="Ppu.cs" />
     <Compile Include="PpuMemory.cs" />
     <Compile Include="Ui.cs" />
+    <Compile Include="mappers\NromMapper.cs" />
+    <Compile Include="Mapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
     <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="mappers\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
