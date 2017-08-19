@@ -15,7 +15,7 @@ namespace Nescafe.Mappers
             return _cartridge.PrgRomBanks == 1 ? (ushort)(mappedAddress % 16384) : mappedAddress; // Wrap if only 1 PRG bank
         }
 
-        public override byte ReadAddress(ushort address)
+        public override byte Read(ushort address)
         {
             if (address < 0x2000) // CHR rom stored from $0000 to $1FFF
             {
@@ -29,6 +29,11 @@ namespace Nescafe.Mappers
             {
                 throw new Exception("Invalid mapper read");
             }
+        }
+
+        public override void Write(ushort address)
+        {
+            throw new Exception("Mapper does not support writing");
         }
     }    
 }

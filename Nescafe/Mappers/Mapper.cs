@@ -4,7 +4,8 @@
     {
         protected Cartridge _cartridge;
 
-        public abstract byte ReadAddress(ushort address);
+        public abstract byte Read(ushort address);
+        public abstract void Write(ushort address);
     }
 
 }
