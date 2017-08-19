@@ -26,7 +26,7 @@ public class Controller
 
     public void setButtonState(Button button, bool state)
     {
-        _buttonStates[(int) button] = state;
+        _buttonStates[(int)button] = state;
     }
 
     public void WriteControllerInput(byte input)
@@ -41,8 +41,8 @@ public class Controller
         if (_currButtonIndex > 7) return 1;
 
         bool state = _buttonStates[_currButtonIndex];
-        if (!_strobe) _currButtonIndex ++;
+        if (!_strobe) _currButtonIndex++;
 
-        return (byte) (state ? 1 : 0);
+        return (byte)(state ? 1 : 0);
     }
 }

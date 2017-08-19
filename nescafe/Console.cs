@@ -6,80 +6,80 @@ using System.Diagnostics;
 
 public class Console
 {
-  public readonly Cpu Cpu;
-  public readonly Ppu Ppu;
+    public readonly Cpu Cpu;
+    public readonly Ppu Ppu;
 
-  public readonly CpuMemory CpuMemory;
-  public readonly PpuMemory PpuMemory;
-  
-  public readonly Controller Controller;
+    public readonly CpuMemory CpuMemory;
+    public readonly PpuMemory PpuMemory;
 
-  public Cartridge Cartridge { get; set; }
-  
-  public Action<byte[]> DrawAction { get; set; }
+    public readonly Controller Controller;
 
-  public bool Stop { get; set; }
-  
-  bool _frameEvenOdd;
+    public Cartridge Cartridge { get; set; }
 
-  public Console()
-  {    
-    Controller = new Controller();
+    public Action<byte[]> DrawAction { get; set; }
 
-    CpuMemory = new CpuMemory(this);
-    PpuMemory = new PpuMemory(this);
+    public bool Stop { get; set; }
 
-    Cpu = new Cpu(this);
-    Ppu = new Ppu(this);
-  }
+    bool _frameEvenOdd;
 
-  public void LoadCartridge(Cartridge cartridge)
-  {
-    Cartridge = cartridge;
-
-    Cpu.Reset();
-    Ppu.Reset();
-
-    CpuMemory.Reset();
-    PpuMemory.Reset();
-
-    _frameEvenOdd = false;
-  }
-
-  public void DrawFrame()
-  {
-    DrawAction(Ppu.BitmapData);
-    _frameEvenOdd = !_frameEvenOdd;
-  }
-
-  void goUntilFrame()
-  {
-    bool orig = _frameEvenOdd;
-    while (orig == _frameEvenOdd)
+    public Console()
     {
-      int cpuCycles = Cpu.Step();
+        Controller = new Controller();
 
-      // 3 PPU cycles for each CPU cycle
-      for (int i=0;i<cpuCycles*3;i++)
-      {
-        Ppu.Step();
-      }
+        CpuMemory = new CpuMemory(this);
+        PpuMemory = new PpuMemory(this);
+
+        Cpu = new Cpu(this);
+        Ppu = new Ppu(this);
     }
-  }
 
-  public void Start()
-  {
-    Stop = false;
-    byte[] bitmapData = Ppu.BitmapData;
-
-    while (!Stop)
+    public void LoadCartridge(Cartridge cartridge)
     {
-      Stopwatch frameWatch = Stopwatch.StartNew();
-      goUntilFrame();
-      frameWatch.Stop();
+        Cartridge = cartridge;
 
-      long timeTaken = frameWatch.ElapsedMilliseconds;
-      Thread.Sleep((int) ((1000.0/60) - timeTaken));
+        Cpu.Reset();
+        Ppu.Reset();
+
+        CpuMemory.Reset();
+        PpuMemory.Reset();
+
+        _frameEvenOdd = false;
     }
-  }
+
+    public void DrawFrame()
+    {
+        DrawAction(Ppu.BitmapData);
+        _frameEvenOdd = !_frameEvenOdd;
+    }
+
+    void goUntilFrame()
+    {
+        bool orig = _frameEvenOdd;
+        while (orig == _frameEvenOdd)
+        {
+            int cpuCycles = Cpu.Step();
+
+            // 3 PPU cycles for each CPU cycle
+            for (int i = 0; i < cpuCycles * 3; i++)
+            {
+                Ppu.Step();
+            }
+        }
+    }
+
+    public void Start()
+    {
+        Stop = false;
+        byte[] bitmapData = Ppu.BitmapData;
+
+        while (!Stop)
+        {
+            Stopwatch frameWatch = Stopwatch.StartNew();
+            goUntilFrame();
+            frameWatch.Stop();
+
+            long timeTaken = frameWatch.ElapsedMilliseconds;
+            Thread.Sleep((int)((1000.0 / 60) - timeTaken));
+        }
+    }
 }

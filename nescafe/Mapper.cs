@@ -1,6 +1,6 @@
 public abstract class Mapper
 {
-  protected Cartridge _cartridge;
+    protected Cartridge _cartridge;
 
-  public abstract byte ReadAddress(ushort address);
+    public abstract byte ReadAddress(ushort address);
 }
