@@ -73,7 +73,7 @@ class Ui : Form
             }
             else
             {
-                MessageBox.Show("Could not load cartridge, see standard output for details");
+                MessageBox.Show("Could not load ROM, see standard output for details");
             }
         }
     }
@@ -90,7 +90,7 @@ class Ui : Form
         // File menu
         var fileMenu = new ToolStripMenuItem("File");
 
-        var fileLoadMenu = new ToolStripMenuItem("Load NES Cartridge", null, new EventHandler(LoadCartridge));
+        var fileLoadMenu = new ToolStripMenuItem("Load ROM", null, new EventHandler(LoadCartridge));
         fileMenu.DropDownItems.Add(fileLoadMenu);
 
         ms.Items.Add(fileMenu);

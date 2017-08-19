@@ -28,7 +28,13 @@ or with xbuild:
 
 # Loading a ROM
 
-Load an iNES rom using File->Load NES Cartridge
+Load an iNES ROM using File->Load ROM. The game should start immediately
+or an error will be displayed indicating why the ROM could not be loaded.
+
+# Limitations
+
+- The NES APU is currently not implemented meaning no audio.
+- Mapper 0 is currently the only mapper supported.
 
 # Controls
 
