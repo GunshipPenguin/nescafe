@@ -43,6 +43,34 @@ namespace Nescafe
             return _console.Ppu.ReadFromRegister(GetPpuRegisterFromAddress(address));
         }
 
+        byte ReadApuIoRegister(ushort address)
+        {
+            byte data;
+            switch(address)
+            {
+                case 0x4016: // Controller 1
+                    data = _console.Controller.ReadControllerOutput();
+                    break;
+                default: // Unimplemented register
+                    data = 0;
+                    break;
+            }
+            return data;
+        }
+
+        void WriteApuIoRegister(ushort address, byte data)
+        {
+            switch(address)
+            {
+                case 0x4016: // Controller 1
+                    _console.Controller.WriteControllerInput(data);
+                    break;
+                default: // Unimplemented register
+                    data = 0;
+                    break;            
+            }
+        }
+
         public override byte Read(ushort address)
         {
             byte data;
@@ -55,18 +83,21 @@ namespace Nescafe
             {
                 data = ReadPpuRegister(address);
             }
+            else if (address <= 0x4017) // Apu and IO Registers
+            {
+                data = ReadApuIoRegister(address);
+            }
+            else if (address <= 0x401F) // Disabled on a retail NES
+            {
+                data = 0;
+            }
             else if (address >= 0x4020) // Handled by mapper (PRG rom, CHR rom/ram etc.)
             {
                 data = _console.Cartridge.Mapper.Read(address);
             }
-            else if (address == 0x4016) // Controller
-            {
-                data = _console.Controller.ReadControllerOutput();
-            }
             else // Invalid Read
             {
-                data = 0;
-                // System.Console.WriteLine("Invalid CPU Memory Read from address: " + address.ToString("X4"));
+                throw new Exception("Invalid CPU read at address " + address.ToString("X4"));
             }
 
             return data;
@@ -83,13 +114,21 @@ namespace Nescafe
             {
                 WritePpuRegister(address, data);
             }
-            else if (address == 0x4016) // Controller
+            else if (address <= 0x4017) // APU / IO 
             {
-                _console.Controller.WriteControllerInput(data);
+                WriteApuIoRegister(address, data);
+            }
+            else if (address <= 0x401F) // Disabled on a retail NES
+            {
+
+            }
+            else if (address >= 0x4020)
+            {
+                _console.Cartridge.Mapper.Write(address, data);
             }
             else // Invalid Write
             {
-                // System.Console.WriteLine("Invalid CPU Memory Write to address: " + address.ToString("X4"));
+                throw new Exception("Invalid CPU write to address " + address.ToString("X4"));
             }
         }
     }
