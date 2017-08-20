@@ -31,7 +31,7 @@ namespace Nescafe.Mappers
             }
         }
 
-        public override void Write(ushort address)
+        public override void Write(ushort address, byte data)
         {
             throw new Exception("Mapper does not support writing");
         }

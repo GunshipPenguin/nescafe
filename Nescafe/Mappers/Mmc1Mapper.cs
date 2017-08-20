@@ -8,5 +8,15 @@ namespace Nescafe.Mappers
         {
             
         }
+
+        public override byte Read(ushort address)
+        {
+            return 0x01;
+        }
+
+        public override void Write(ushort address, byte data)
+        {
+            throw new Exception();
+        }
     }
 }
