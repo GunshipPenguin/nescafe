@@ -42,8 +42,8 @@ namespace Nescafe
         {
             ushort index = (ushort)((address - 0x3F00) % 32);
 
-            // Mirror $3F10, $3F14, $3F18, $3fF1C to $3F00
-            if (index >= 16 && ((index - 16) % 4 == 0)) return 0;
+            // Mirror $3F10, $3F14, $3F18, $3F1C to $3F00, $3F14, $3F08 $3F0C
+            if (index >= 16 && ((index - 16) % 4 == 0)) return (ushort) (index - 16);
             else return index;
         }
 
