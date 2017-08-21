@@ -165,7 +165,7 @@ namespace Nescafe
             A = 0;
             X = 0;
             Y = 0;
-            setProcessorFlags((byte)0x24);
+            SetProcessorFlags((byte)0x24);
 
             Cycles = 0;
             _idle = 0;
@@ -191,7 +191,7 @@ namespace Nescafe
                 return 1;
             }
 
-            if (nmiInterrupt) nmi();
+            if (nmiInterrupt) Nmi();
             nmiInterrupt = false;
 
             int cyclesOrig = Cycles;
@@ -214,11 +214,11 @@ namespace Nescafe
                     break;
                 case AddressMode.AbsoluteX:
                     address = (ushort)(_memory.Read16((ushort)(PC + 1)) + X);
-                    pageCrossed = isPageCross((ushort)(address - X), (ushort)X);
+                    pageCrossed = IsPageCross((ushort)(address - X), (ushort)X);
                     break;
                 case AddressMode.AbsoluteY:
                     address = (ushort)(_memory.Read16((ushort)(PC + 1)) + Y);
-                    pageCrossed = isPageCross((ushort)(address - Y), (ushort)Y);
+                    pageCrossed = IsPageCross((ushort)(address - Y), (ushort)Y);
                     break;
                 case AddressMode.Accumulator:
                     break;
@@ -251,7 +251,7 @@ namespace Nescafe
 
                     // Target address (Must wrap to 0x00 if at 0xFF)
                     address = (ushort)(_memory.Read16WrapPage(valueAddress) + Y);
-                    pageCrossed = isPageCross((ushort)(address - Y), address);
+                    pageCrossed = IsPageCross((ushort)(address - Y), address);
                     break;
             }
 
@@ -264,47 +264,47 @@ namespace Nescafe
             return Cycles - cyclesOrig;
         }
 
-        private void setZn(byte value)
+        private void SetZn(byte value)
         {
             Z = value == 0;
             N = ((value >> 7) & 1) == 1;
         }
 
-        private bool isBitSet(byte value, int index)
+        private bool IsBitSet(byte value, int index)
         {
             return (value & (1 << index)) != 0;
         }
 
-        private byte pullStack()
+        private byte PullStack()
         {
             S++;
             byte data = _memory.Read((ushort)(0x0100 | S));
             return data;
         }
 
-        private void pushStack(byte data)
+        private void PushStack(byte data)
         {
             _memory.Write((ushort)(0x100 | S), data);
             S--;
         }
 
-        private ushort pullStack16()
+        private ushort PullStack16()
         {
-            byte lo = pullStack();
-            byte hi = pullStack();
+            byte lo = PullStack();
+            byte hi = PullStack();
             return (ushort)((hi << 8) | lo);
         }
 
-        private void pushStack16(ushort data)
+        private void PushStack16(ushort data)
         {
             byte lo = (byte)(data & 0xFF);
             byte hi = (byte)((data >> 8) & 0xFF);
 
-            pushStack(hi);
-            pushStack(lo);
+            PushStack(hi);
+            PushStack(lo);
         }
 
-        private byte getStatusFlags()
+        private byte GetStatusFlags()
         {
             byte flags = 0;
 
@@ -320,32 +320,32 @@ namespace Nescafe
             return flags;
         }
 
-        private void setProcessorFlags(byte flags)
+        private void SetProcessorFlags(byte flags)
         {
-            C = isBitSet(flags, 0);
-            Z = isBitSet(flags, 1);
-            I = isBitSet(flags, 2);
-            D = isBitSet(flags, 3);
-            B = isBitSet(flags, 4);
-            V = isBitSet(flags, 6);
-            N = isBitSet(flags, 7);
+            C = IsBitSet(flags, 0);
+            Z = IsBitSet(flags, 1);
+            I = IsBitSet(flags, 2);
+            D = IsBitSet(flags, 3);
+            B = IsBitSet(flags, 4);
+            V = IsBitSet(flags, 6);
+            N = IsBitSet(flags, 7);
         }
 
-        private bool isPageCross(ushort a, ushort b)
+        private bool IsPageCross(ushort a, ushort b)
         {
             return (a & 0xFF) != (b & 0xFF);
         }
 
-        private void handleBranchCycles(ushort origPc, ushort branchPc)
+        private void HandleBranchCycles(ushort origPc, ushort branchPc)
         {
             Cycles++;
-            Cycles += isPageCross(origPc, branchPc) ? 1 : 0;
+            Cycles += IsPageCross(origPc, branchPc) ? 1 : 0;
         }
 
-        void nmi()
+        void Nmi()
         {
-            pushStack16(PC);
-            pushStack(getStatusFlags());
+            PushStack16(PC);
+            PushStack(GetStatusFlags());
             PC = _memory.Read16(0xFFFA);
             I = true;
         }
@@ -358,8 +358,8 @@ namespace Nescafe
 
         void brk(AddressMode mode, ushort address)
         {
-            pushStack16(PC);
-            pushStack(getStatusFlags());
+            PushStack16(PC);
+            PushStack(GetStatusFlags());
             B = true;
             PC = _memory.Read16((ushort)0xFFFE);
         }
@@ -369,30 +369,30 @@ namespace Nescafe
             bool Corig = C;
             if (mode == AddressMode.Accumulator)
             {
-                C = isBitSet(A, 0);
+                C = IsBitSet(A, 0);
                 A >>= 1;
                 A |= (byte)(Corig ? 0x80 : 0);
 
-                setZn(A);
+                SetZn(A);
             }
             else
             {
                 byte data = _memory.Read(address);
-                C = isBitSet(data, 0);
+                C = IsBitSet(data, 0);
 
                 data >>= 1;
                 data |= (byte)(Corig ? 0x80 : 0);
 
                 _memory.Write(address, data);
 
-                setZn(data);
+                SetZn(data);
             }
         }
 
         void rti(AddressMode mode, ushort address)
         {
-            setProcessorFlags(pullStack());
-            PC = pullStack16();
+            SetProcessorFlags(PullStack());
+            PC = PullStack16();
         }
 
         void txs(AddressMode mode, ushort address)
@@ -403,55 +403,55 @@ namespace Nescafe
         void tsx(AddressMode mode, ushort address)
         {
             X = S;
-            setZn(X);
+            SetZn(X);
         }
 
         void txa(AddressMode mode, ushort address)
         {
             A = X;
-            setZn(A);
+            SetZn(A);
         }
 
         void tya(AddressMode mode, ushort address)
         {
             A = Y;
-            setZn(A);
+            SetZn(A);
         }
 
         void tay(AddressMode mode, ushort address)
         {
             Y = A;
-            setZn(Y);
+            SetZn(Y);
         }
 
         void tax(AddressMode mode, ushort address)
         {
             X = A;
-            setZn(X);
+            SetZn(X);
         }
 
         void dex(AddressMode mode, ushort address)
         {
             X--;
-            setZn(X);
+            SetZn(X);
         }
 
         void dey(AddressMode mode, ushort address)
         {
             Y--;
-            setZn(Y);
+            SetZn(Y);
         }
 
         void inx(AddressMode mode, ushort address)
         {
             X++;
-            setZn(X);
+            SetZn(X);
         }
 
         void iny(AddressMode mode, ushort address)
         {
             Y++;
-            setZn(Y);
+            SetZn(Y);
         }
 
         void sty(AddressMode mode, ushort address)
@@ -462,14 +462,14 @@ namespace Nescafe
         void cpx(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
-            setZn((byte)(X - data));
+            SetZn((byte)(X - data));
             C = X >= data;
         }
 
         void cpy(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
-            setZn((byte)(Y - data));
+            SetZn((byte)(Y - data));
             C = Y >= data;
         }
 
@@ -479,7 +479,7 @@ namespace Nescafe
             int notCarry = (!C ? 1 : 0);
 
             byte result = (byte)(A - data - notCarry);
-            setZn(result);
+            SetZn(result);
 
             // If an overflow occurs (result actually less than 0)
             // the carry flag is cleared
@@ -496,7 +496,7 @@ namespace Nescafe
             int carry = (C ? 1 : 0);
 
             byte sum = (byte)(A + data + carry);
-            setZn(sum);
+            SetZn(sum);
 
             C = (A + data + carry) > 0xFF;
 
@@ -513,7 +513,7 @@ namespace Nescafe
         {
             byte data = _memory.Read(address);
             A ^= data;
-            setZn(A);
+            SetZn(A);
         }
 
         void clv(AddressMode mode, ushort address)
@@ -528,7 +528,7 @@ namespace Nescafe
 
         void plp(AddressMode mode, ushort address)
         {
-            setProcessorFlags((byte)(pullStack() & ~(0x10)));
+            SetProcessorFlags((byte)(PullStack() & ~(0x10)));
         }
 
         void cld(AddressMode mode, ushort address)
@@ -540,25 +540,25 @@ namespace Nescafe
         {
             byte data = _memory.Read(address);
             C = A >= data;
-            setZn((byte)(A - data));
+            SetZn((byte)(A - data));
         }
 
         void and(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
             A &= data;
-            setZn(A);
+            SetZn(A);
         }
 
         void pla(AddressMode mode, ushort address)
         {
-            A = pullStack();
-            setZn(A);
+            A = PullStack();
+            SetZn(A);
         }
 
         void php(AddressMode mode, ushort address)
         {
-            pushStack((byte)(getStatusFlags() | 0x10));
+            PushStack((byte)(GetStatusFlags() | 0x10));
         }
 
         void sed(AddressMode mode, ushort address)
@@ -576,7 +576,7 @@ namespace Nescafe
             byte data = _memory.Read(address);
             data -= 1;
             _memory.Write(address, data);
-            setZn(data);
+            SetZn(data);
         }
 
         void inc(AddressMode mode, ushort address)
@@ -584,17 +584,17 @@ namespace Nescafe
             byte data = _memory.Read(address);
             data += 1;
             _memory.Write(address, data);
-            setZn(data);
+            SetZn(data);
         }
 
         void rts(AddressMode mode, ushort address)
         {
-            PC = (ushort)(pullStack16() + 1);
+            PC = (ushort)(PullStack16() + 1);
         }
 
         void jsr(AddressMode mode, ushort address)
         {
-            pushStack16((ushort)(PC - 1));
+            PushStack16((ushort)(PC - 1));
             PC = address;
         }
 
@@ -602,7 +602,7 @@ namespace Nescafe
         {
             if (!N)
             {
-                handleBranchCycles(PC, address);
+                HandleBranchCycles(PC, address);
                 PC = address;
             }
         }
@@ -611,7 +611,7 @@ namespace Nescafe
         {
             if (!V)
             {
-                handleBranchCycles(PC, address);
+                HandleBranchCycles(PC, address);
                 PC = address;
             }
         }
@@ -620,7 +620,7 @@ namespace Nescafe
         {
             if (V)
             {
-                handleBranchCycles(PC, address);
+                HandleBranchCycles(PC, address);
                 PC = address;
             }
         }
@@ -628,8 +628,8 @@ namespace Nescafe
         void bit(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
-            N = isBitSet(data, 7);
-            V = isBitSet(data, 6);
+            N = IsBitSet(data, 7);
+            V = IsBitSet(data, 6);
             Z = (data & A) == 0;
         }
 
@@ -637,7 +637,7 @@ namespace Nescafe
         {
             if (!Z)
             {
-                handleBranchCycles(PC, address);
+                HandleBranchCycles(PC, address);
                 PC = address;
             }
         }
@@ -646,7 +646,7 @@ namespace Nescafe
         {
             if (Z)
             {
-                handleBranchCycles(PC, address);
+                HandleBranchCycles(PC, address);
                 PC = address;
             }
         }
@@ -660,7 +660,7 @@ namespace Nescafe
         {
             if (!C)
             {
-                handleBranchCycles(PC, address);
+                HandleBranchCycles(PC, address);
                 PC = address;
             }
         }
@@ -669,7 +669,7 @@ namespace Nescafe
         {
             if (C)
             {
-                handleBranchCycles(PC, address);
+                HandleBranchCycles(PC, address);
                 PC = address;
             }
         }
@@ -692,13 +692,13 @@ namespace Nescafe
         void ldy(AddressMode mode, ushort address)
         {
             Y = _memory.Read(address);
-            setZn(Y);
+            SetZn(Y);
         }
 
         void ldx(AddressMode mode, ushort address)
         {
             X = _memory.Read(address);
-            setZn(X);
+            SetZn(X);
         }
 
         void jmp(AddressMode mode, ushort address)
@@ -714,35 +714,35 @@ namespace Nescafe
         void ora(AddressMode mode, ushort address)
         {
             A |= _memory.Read(address);
-            setZn(A);
+            SetZn(A);
         }
 
         void lda(AddressMode mode, ushort address)
         {
             A = _memory.Read(address);
-            setZn(A);
+            SetZn(A);
         }
 
         void pha(AddressMode mode, ushort address)
         {
-            pushStack(A);
+            PushStack(A);
         }
 
         void asl(AddressMode mode, ushort address)
         {
             if (mode == AddressMode.Accumulator)
             {
-                C = isBitSet(A, 7);
+                C = IsBitSet(A, 7);
                 A <<= 1;
-                setZn(A);
+                SetZn(A);
             }
             else
             {
                 byte data = _memory.Read(address);
-                C = isBitSet(data, 7);
+                C = IsBitSet(data, 7);
                 byte dataUpdated = (byte)(data << 1);
                 _memory.Write(address, dataUpdated);
-                setZn(dataUpdated);
+                SetZn(dataUpdated);
             }
         }
 
@@ -751,23 +751,23 @@ namespace Nescafe
             bool Corig = C;
             if (mode == AddressMode.Accumulator)
             {
-                C = isBitSet(A, 7);
+                C = IsBitSet(A, 7);
                 A <<= 1;
                 A |= (byte)(Corig ? 1 : 0);
 
-                setZn(A);
+                SetZn(A);
             }
             else
             {
                 byte data = _memory.Read(address);
-                C = isBitSet(data, 7);
+                C = IsBitSet(data, 7);
 
                 data <<= 1;
                 data |= (byte)(Corig ? 1 : 0);
 
                 _memory.Write(address, data);
 
-                setZn(data);
+                SetZn(data);
             }
         }
 
@@ -778,7 +778,7 @@ namespace Nescafe
                 C = (A & 1) == 1;
                 A >>= 1;
 
-                setZn(A);
+                SetZn(A);
             }
             else
             {
@@ -789,7 +789,7 @@ namespace Nescafe
 
                 _memory.Write(address, updatedValue);
 
-                setZn(updatedValue);
+                SetZn(updatedValue);
             }
         }
     }
