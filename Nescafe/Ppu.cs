@@ -331,7 +331,8 @@ namespace Nescafe
             // Get pixel data (4 bits of tile shift register as specified by x)
             byte bgPixelData = (byte)((_tileShiftReg >> (x * 4)) & 0xF);
 
-            byte spritePixelData = GetSpritePixelData(out int spriteIndex);
+            int spriteIndex;
+            byte spritePixelData = GetSpritePixelData(out spriteIndex);
 
             int bgColorNum = bgPixelData & 0x03;
             int spriteColorNum = spritePixelData & 0x03;
