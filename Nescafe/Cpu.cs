@@ -4,7 +4,7 @@ namespace Nescafe
 {
     public class Cpu
     {
-        CpuMemory _memory;
+        readonly CpuMemory _memory;
 
         enum AddressMode
         {
@@ -127,7 +127,6 @@ namespace Nescafe
 
         // If positive, idle 1 cycle and deincrement each step
         int _idle;
-
 
         delegate void Instruction(AddressMode mode, ushort address);
         Instruction[] _instructions;

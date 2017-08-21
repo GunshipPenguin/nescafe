@@ -5,9 +5,8 @@ namespace Nescafe
     public class CpuMemory : Memory
     {
         // First 2KB of internal ram
-        byte[] internalRam = new byte[2048];
-
-        Console _console;
+        readonly byte[] _internalRam = new byte[2048];
+        readonly Console _console;
 
         public CpuMemory(Console console)
         {
@@ -16,7 +15,7 @@ namespace Nescafe
 
         public void Reset()
         {
-            Array.Clear(internalRam, 0, internalRam.Length);
+            Array.Clear(_internalRam, 0, _internalRam.Length);
         }
 
         // Return the index in internalRam of the address (handle mirroring)
@@ -77,7 +76,7 @@ namespace Nescafe
             if (address < 0x2000) // Internal CPU RAM 
             {
                 ushort addressIndex = HandleInternalRamMirror(address);
-                data = internalRam[addressIndex];
+                data = _internalRam[addressIndex];
             }
             else if (address <= 0x3FFF) // PPU Registers
             {
@@ -108,7 +107,7 @@ namespace Nescafe
             if (address < 0x2000) // Internal CPU RAM
             {
                 ushort addressIndex = HandleInternalRamMirror(address);
-                internalRam[addressIndex] = data;
+                _internalRam[addressIndex] = data;
             }
             else if (address <= 0x3FFF || address == 0x4014) // PPU Registers
             {

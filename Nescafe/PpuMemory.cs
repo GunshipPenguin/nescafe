@@ -4,9 +4,9 @@ namespace Nescafe
 {
     public class PpuMemory : Memory
     {
-        Console _console;
-        byte[] _vRam;
-        byte[] _paletteRam;
+        readonly Console _console;
+        readonly byte[] _vRam;
+        readonly byte[] _paletteRam;
 
         public PpuMemory(Console console)
         {

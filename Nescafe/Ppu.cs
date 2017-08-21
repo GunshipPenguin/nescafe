@@ -6,8 +6,8 @@ namespace Nescafe
     {
         public byte[] BitmapData { get; }
 
-        PpuMemory _memory;
-        Console _console;
+        readonly PpuMemory _memory;
+        readonly Console _console;
 
         // OAM / Sprite rendering
         byte[] _oam;
@@ -236,14 +236,14 @@ namespace Nescafe
             return (v >> 12) & 0x7;
         }
 
-        int GetPatternPixel(ushort patternAddr, int x, int y, bool flipHoriz = false, bool flipVert = false)
+        int GetPatternPixel(ushort patternAddr, int xPos, int yPos, bool flipHoriz = false, bool flipVert = false)
         {
             // Flip x and y if needed
-            x = flipHoriz ? 7 - x : x;
-            y = flipVert ? 7 - y : y;
+            xPos = flipHoriz ? 7 - xPos : xPos;
+            yPos = flipVert ? 7 - yPos : yPos;
 
             // First byte in bitfield
-            ushort yAddr = (ushort)(patternAddr + y);
+            ushort yAddr = (ushort)(patternAddr + yPos);
 
             // Read the 2 bytes in the bitfield for the y coordinate
             byte[] pattern = new byte[2];
@@ -251,8 +251,8 @@ namespace Nescafe
             pattern[1] = _memory.Read((ushort)(yAddr + 8));
 
             // Extract correct bits based on x coordinate
-            byte loBit = (byte)((pattern[0] >> (7 - x)) & 1);
-            byte hiBit = (byte)((pattern[1] >> (7 - x)) & 1);
+            byte loBit = (byte)((pattern[0] >> (7 - xPos)) & 1);
+            byte hiBit = (byte)((pattern[1] >> (7 - xPos)) & 1);
 
             return ((hiBit << 1) | loBit) & 0x03;
         }
