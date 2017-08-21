@@ -122,7 +122,12 @@ namespace Nescafe
         // Interrupts
         bool nmiInterrupt;
 
-        int _cycles;
+        // Current number of cycles executed
+        public int Cycles { get; internal set; }
+
+        // If positive, idle 1 cycle and deincrement each step
+        int _idle;
+
 
         delegate void Instruction(AddressMode mode, ushort address);
         Instruction[] _instructions;
@@ -161,7 +166,10 @@ namespace Nescafe
             X = 0;
             Y = 0;
             setProcessorFlags((byte)0x24);
-            _cycles = 0;
+
+            Cycles = 0;
+            _idle = 0;
+
             nmiInterrupt = false;
         }
 
@@ -170,15 +178,26 @@ namespace Nescafe
             nmiInterrupt = true;
         }
 
+        public void AddIdleCycles(int idleCycles)
+        {
+            _idle += idleCycles;
+        }
+
         public int Step()
         {
+            if (_idle > 0)
+            {
+                _idle--;
+                return 1;
+            }
+
             if (nmiInterrupt)
             {
                 nmi();
             }
             nmiInterrupt = false;
 
-            int cyclesOrig = _cycles;
+            int cyclesOrig = Cycles;
             byte opCode = _memory.Read(PC);
 
             // System.Console.Write(PC.ToString("X4") + "  " + opCode.ToString("X2") + "\t\t\t\t");
@@ -249,12 +268,12 @@ namespace Nescafe
             }
 
             PC += (ushort)_instructionSizes[opCode];
-            _cycles += _instructionCycles[opCode];
+            Cycles += _instructionCycles[opCode];
 
-            if (pageCrossed) _cycles += _instructionPageCycles[opCode];
+            if (pageCrossed) Cycles += _instructionPageCycles[opCode];
             _instructions[opCode](mode, address);
 
-            return _cycles - cyclesOrig;
+            return Cycles - cyclesOrig;
         }
 
         private void setZn(byte value)
@@ -331,8 +350,8 @@ namespace Nescafe
 
         private void handleBranchCycles(ushort origPc, ushort branchPc)
         {
-            _cycles++;
-            _cycles += isPageCross(origPc, branchPc) ? 1 : 0;
+            Cycles++;
+            Cycles += isPageCross(origPc, branchPc) ? 1 : 0;
         }
 
         void nmi()

@@ -684,6 +684,15 @@ namespace Nescafe
         {
             ushort startAddr = (ushort)(data << 8);
             _console.CpuMemory.ReadBuf(_oam, startAddr, 256);
+
+            // OAM DMA always takes at least 513 CPU cycles
+            _console.Cpu.AddIdleCycles(513);
+
+            // OAM DMA takes an extra CPU cycle if executed on an odd CPU cycle
+            if (_console.Cpu.Cycles % 2 == 1)
+            {
+                _console.Cpu.AddIdleCycles(1);
+            }
         }
 
         // $2002
