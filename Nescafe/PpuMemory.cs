@@ -50,9 +50,9 @@ namespace Nescafe
         public override byte Read(ushort address)
         {
             byte data;
-            if (address < 0x2000) // CHR ROM pattern tables
+            if (address < 0x2000) // CHR (ROM or RAM) pattern tables
             {
-                data = _console.Cartridge.ReadChrRom(address);
+                data = _console.Cartridge.ReadChr(address);
             }
             else if (address <= 0x3EFF) // Internal _vRam
             {
@@ -71,7 +71,11 @@ namespace Nescafe
 
         public override void Write(ushort address, byte data)
         {
-            if (address >= 0x2000 && address <= 0x3EFF) // Internal VRAM
+            if (address < 0x2000)
+            {
+                _console.Cartridge.Mapper.Write(address, data);
+            }
+            else if (address >= 0x2000 && address <= 0x3EFF) // Internal VRAM
             {
                 _vRam[GetVRamIndex(address)] = data;
             }

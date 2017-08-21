@@ -19,7 +19,7 @@ namespace Nescafe.Mappers
         {
             if (address < 0x2000) // CHR rom stored from $0000 to $1FFF
             {
-                return _cartridge.ReadChrRom(address);
+                return _cartridge.ReadChr(address);
             }
             else if (address >= 0x8000) // PRG ROM stored at $8000 and above
             {
@@ -33,7 +33,10 @@ namespace Nescafe.Mappers
 
         public override void Write(ushort address, byte data)
         {
-            throw new Exception("Mapper does not support writing");
+            if (address < 0x2000) // CHR RAM
+            {
+                _cartridge.WriteChr(address, data);
+            }
         }
     }    
 }
