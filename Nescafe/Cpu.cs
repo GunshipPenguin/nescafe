@@ -8,7 +8,7 @@ namespace Nescafe
 
         enum AddressMode
         {
-            Absolute = 1,      // 1
+            Absolute = 1,    // 1
             AbsoluteX,       // 2
             AbsoluteY,       // 3
             Accumulator,     // 4
