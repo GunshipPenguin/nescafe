@@ -15,16 +15,16 @@ namespace Nescafe
         byte[] _prgRom;
         byte[] _chr;
 
-        public int PrgRomBanks { get; set; }
-        public int ChrRomBanks { get; set; }
+        public int PrgRomBanks { get; private set; }
+        public int ChrRomBanks { get; private set; }
 
-        public bool VerticalVramMirroring { get; set; }
-        public bool UsesChrRam { get; set; }
+        public bool VerticalVramMirroring { get; private set; }
+        public bool UsesChrRam { get; private set; }
 
         int _mapperNumber;
-        public Mapper Mapper { get; set; }
+        public Mapper Mapper { get; private set; }
 
-        public bool Invalid { get; set; }
+        public bool Invalid { get; private set; }
 
         int _prgRamSize;
 
