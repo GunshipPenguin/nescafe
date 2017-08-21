@@ -52,7 +52,7 @@ namespace Nescafe
             _frameEvenOdd = !_frameEvenOdd;
         }
 
-        void goUntilFrame()
+        void GoUntilFrame()
         {
             bool orig = _frameEvenOdd;
             while (orig == _frameEvenOdd)
@@ -75,7 +75,7 @@ namespace Nescafe
             while (!Stop)
             {
                 Stopwatch frameWatch = Stopwatch.StartNew();
-                goUntilFrame();
+                GoUntilFrame();
                 frameWatch.Stop();
 
                 long timeTaken = frameWatch.ElapsedMilliseconds;
