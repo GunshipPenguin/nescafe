@@ -264,38 +264,38 @@ namespace Nescafe
             return Cycles - cyclesOrig;
         }
 
-        private void SetZn(byte value)
+        void SetZn(byte value)
         {
             Z = value == 0;
             N = ((value >> 7) & 1) == 1;
         }
 
-        private bool IsBitSet(byte value, int index)
+        bool IsBitSet(byte value, int index)
         {
             return (value & (1 << index)) != 0;
         }
 
-        private byte PullStack()
+        byte PullStack()
         {
             S++;
             byte data = _memory.Read((ushort)(0x0100 | S));
             return data;
         }
 
-        private void PushStack(byte data)
+        void PushStack(byte data)
         {
             _memory.Write((ushort)(0x100 | S), data);
             S--;
         }
 
-        private ushort PullStack16()
+        ushort PullStack16()
         {
             byte lo = PullStack();
             byte hi = PullStack();
             return (ushort)((hi << 8) | lo);
         }
 
-        private void PushStack16(ushort data)
+        void PushStack16(ushort data)
         {
             byte lo = (byte)(data & 0xFF);
             byte hi = (byte)((data >> 8) & 0xFF);
@@ -304,7 +304,7 @@ namespace Nescafe
             PushStack(lo);
         }
 
-        private byte GetStatusFlags()
+        byte GetStatusFlags()
         {
             byte flags = 0;
 
@@ -320,7 +320,7 @@ namespace Nescafe
             return flags;
         }
 
-        private void SetProcessorFlags(byte flags)
+        void SetProcessorFlags(byte flags)
         {
             C = IsBitSet(flags, 0);
             Z = IsBitSet(flags, 1);
@@ -331,12 +331,12 @@ namespace Nescafe
             N = IsBitSet(flags, 7);
         }
 
-        private bool IsPageCross(ushort a, ushort b)
+        bool IsPageCross(ushort a, ushort b)
         {
             return (a & 0xFF) != (b & 0xFF);
         }
 
-        private void HandleBranchCycles(ushort origPc, ushort branchPc)
+        void HandleBranchCycles(ushort origPc, ushort branchPc)
         {
             Cycles++;
             Cycles += IsPageCross(origPc, branchPc) ? 1 : 0;
