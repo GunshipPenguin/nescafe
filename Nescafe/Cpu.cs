@@ -123,7 +123,7 @@ namespace Nescafe
         bool nmiInterrupt;
 
         // Current number of cycles executed
-        public int Cycles { get; internal set; }
+        public int Cycles { get; private set; }
 
         // If positive, idle 1 cycle and deincrement each step
         int _idle;
