@@ -191,10 +191,7 @@ namespace Nescafe
                 return 1;
             }
 
-            if (nmiInterrupt)
-            {
-                nmi();
-            }
+            if (nmiInterrupt) nmi();
             nmiInterrupt = false;
 
             int cyclesOrig = Cycles;
