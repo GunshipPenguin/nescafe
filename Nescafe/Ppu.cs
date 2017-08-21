@@ -720,11 +720,18 @@ namespace Nescafe
         byte ReadPpuData()
         {
             byte data = _memory.Read(v);
+
+            // Buffered read emulation
+            // https://wiki.nesdev.com/w/index.php/PPU_registers#The_PPUDATA_read_buffer_.28post-fetch.29
             if (v < 0x3F00)
             {
                 byte bufferedData = _ppuDataBuffer;
                 _ppuDataBuffer = data;
                 data = bufferedData;
+            }
+            else
+            {
+                _ppuDataBuffer = _memory.Read((ushort) (v - 0x1000));
             }
 
             v += (ushort)(_vRamIncrement);
