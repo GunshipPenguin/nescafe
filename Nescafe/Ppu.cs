@@ -513,11 +513,8 @@ namespace Nescafe
                             break;
                     }
                 }
-            }
 
-            if (renderingEnabled)
-            {
-                // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
+                 // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
                 if (_cycle == 257) CopyHorizPositionData();
 
                 // Copy vertical position data from t to v repeatedly from cycle 280 to 304 (if rendering is enabled)
