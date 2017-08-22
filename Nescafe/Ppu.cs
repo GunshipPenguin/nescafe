@@ -417,7 +417,7 @@ namespace Nescafe
             if (_scanline == 241 && _cycle == 1)
             {
                 _nmiOccurred = 1;
-                if (_nmiOccurred != 0 && _nmiOutput != 0) _console.Cpu.TriggerNmi();
+                if (_nmiOutput != 0) _console.Cpu.TriggerNmi();
             }
 
             bool renderingEnabled = (_flagShowBackground != 0) || (_flagShowSprites != 0);
