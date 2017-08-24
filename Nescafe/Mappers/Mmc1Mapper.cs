@@ -49,17 +49,11 @@ namespace Nescafe.Mappers
 
         public override byte Read(ushort address)
         {
-            //System.Console.WriteLine("r" + address.ToString("X4"));
-            if (address == 0xBF76)
-            {
-                System.Console.WriteLine("asdf");
-            }
-
             byte data;
             if (address <= 0x1FFF) // CHR Banks 0 and 1 $0000-0x0FFF and $1000-$1FFF
             {
                 int offset = (address / 0x1000) == 0 ? _chrBank0Offset : _chrBank1Offset;
-                offset += address % 1000;
+                offset += address % 0x1000;
                 data = _cartridge.ReadPrgRom(offset);
             }
             else if (address >= 0x6000 && address <= 0x7FFF) // 8 KB PRG RAM bank (CPU) $6000-$7FFF
@@ -90,7 +84,7 @@ namespace Nescafe.Mappers
                 if (!_cartridge.UsesChrRam) throw new Exception("Attempt to write to CHR ROM at " + address.ToString("X4"));
 
                 int offset = (address / 0x1000) == 0 ? _chrBank0Offset : _chrBank1Offset;
-                offset += address % 1000;
+                offset += address % 0x1000;
                 _cartridge.WriteChr(offset, data);
             }
             else if (address >= 0x6000 && address <= 0x7FFF)
@@ -198,7 +192,6 @@ namespace Nescafe.Mappers
 
         void UpdateBankOffsets()
         {
-           //System.Console.WriteLine("chr: " + _chrMode.ToString() + " prg: " + _prgMode.ToString());
             switch (_chrMode)
             {
                 case 0: // Switch 8 KB at a time
@@ -233,11 +226,6 @@ namespace Nescafe.Mappers
                     _prgBank1Offset = (_cartridge.PrgRomBanks - 1) * 0x4000;
                     break;
             }
-
-            /*System.Console.WriteLine("chr0offset: " + _chrBank0Offset.ToString());
-            System.Console.WriteLine("chr1offset: " + _chrBank1Offset.ToString());
-            System.Console.WriteLine("prg0offset: " + _prgBank0Offset.ToString());
-            System.Console.WriteLine("prg1offset: " + _prgBank1Offset.ToString());*/
         }
     }
 }
