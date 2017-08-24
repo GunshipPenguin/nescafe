@@ -512,10 +512,12 @@ namespace Nescafe
                             if (_cycle == 256) IncrementY();
                             break;
                     }
+
                 }
 
-                 // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
-                if (_cycle == 257) CopyHorizPositionData();
+
+                // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
+                if (_cycle == 257 && (renderScanline || preRenderScanline)) CopyHorizPositionData();
 
                 // Copy vertical position data from t to v repeatedly from cycle 280 to 304 (if rendering is enabled)
                 if (_cycle >= 280 && _cycle <= 304 && _scanline == 261) CopyVertPositionData();
