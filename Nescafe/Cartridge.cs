@@ -15,8 +15,10 @@ namespace Nescafe
         byte[] _prgRom;
         byte[] _chr;
 
+        byte[] _prgRam;
+
         public int PrgRomBanks { get; private set; }
-        public int ChrRomBanks { get; private set; }
+        public int ChrBanks { get; private set; }
 
         public bool VerticalVramMirroring { get; private set; }
         public bool UsesChrRam { get; private set; }
@@ -52,24 +54,28 @@ namespace Nescafe
                     System.Console.WriteLine(" (NROM) Supported!");
                     Mapper = new NromMapper(this);
                     break;
+                case 1:
+                    System.Console.WriteLine(" (MMC1) Supported!");
+                    Mapper = new Mmc1Mapper(this);
+                    break;
                 default:
-                    System.Console.WriteLine(" Mapper is not supported");
+                    System.Console.WriteLine(" mapper is not supported");
                     Invalid = true;
                     break;
             }
         }
 
-        public byte ReadPrgRom(ushort address)
+        public byte ReadPrgRom(int address)
         {
             return _prgRom[address];
         }
 
-        public byte ReadChr(ushort address)
+        public byte ReadChr(int address)
         {
             return _chr[address];
         }
 
-        public void WriteChr(ushort address, byte data)
+        public void WriteChr(int address, byte data)
         {
             if (!UsesChrRam) throw new Exception("Attempted write to CHR ROM at address " + address.ToString("X4"));
             else _chr[address] = data;
@@ -94,8 +100,8 @@ namespace Nescafe
             }
             else
             {
-                _chr = new byte[ChrRomBanks * 8192];
-                reader.Read(_chr, 0, ChrRomBanks * 8192);
+                _chr = new byte[ChrBanks * 8192];
+                reader.Read(_chr, 0, ChrBanks * 8192);
             }
         }
 
@@ -115,14 +121,15 @@ namespace Nescafe
             System.Console.WriteLine((16 * PrgRomBanks).ToString() + "Kb of PRG ROM");
 
             // Size of CHR ROM (Or set CHR RAM if using it)
-            ChrRomBanks = reader.ReadByte();
-            if (ChrRomBanks == 0) {
+            ChrBanks = reader.ReadByte();
+            if (ChrBanks == 0) {
                 System.Console.WriteLine("Cartridge uses CHR RAM");
+                ChrBanks = 2;
                 UsesChrRam = true;
             }
             else 
             {
-                System.Console.WriteLine((8 * ChrRomBanks).ToString() + "Kb of CHR ROM");
+                System.Console.WriteLine((8 * ChrBanks).ToString() + "Kb of CHR ROM");
                 UsesChrRam = false;
             }
 
