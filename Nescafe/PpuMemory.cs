@@ -64,7 +64,6 @@ namespace Nescafe
             }
             else if (address >= 0x3F00 && address <= 0x3FFF) // Palette RAM addresses
             {
-                System.Console.WriteLine(data.ToString("X2") + "->" + address.ToString("X4"));
                 ushort addr = GetPaletteRamIndex(address);
                 _paletteRam[addr] = data;
             }
