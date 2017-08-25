@@ -212,13 +212,13 @@ namespace Nescafe
         void CopyHorizPositionData()
         {
             // v: ....F.. ...EDCBA = t: ....F.. ...EDCBA
-            v = (ushort)((v & 0x7BE0) | t);
+            v = (ushort)((v & 0x7BE0) | (t & 0x041F));
         }
 
         void CopyVertPositionData()
         {
             // v: IHGF.ED CBA..... = t: IHGF.ED CBA.....
-            v = (ushort)((v & 0x041F) | t);
+            v = (ushort)((v & 0x041F) | (t & 0x7BE0));
         }
 
         int CoarseX()
@@ -278,7 +278,7 @@ namespace Nescafe
             }
             else
             {
-                v = (ushort)(v & ~0x7000u & 0xFFFF); // Set fine Y to 0
+                v = (ushort)(v & ~0x7000); // Set fine Y to 0
                 int y = (v & 0x03E0) >> 5; // y = coarse Y
                 if (y == 29)
                 {
@@ -292,8 +292,8 @@ namespace Nescafe
                 else
                 {
                     y += 1; // Increment coarse Y
-                    v = (ushort)((v & ~0x03E0) | (y << 5)); // Put coarse Y back into v
                 }
+                v = (ushort)((v & ~0x03E0) | (y << 5)); // Put coarse Y back into v
             }
         }
 
