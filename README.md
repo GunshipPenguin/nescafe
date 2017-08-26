@@ -36,10 +36,15 @@ or with xbuild:
 Load an iNES ROM using File->Load ROM. The game should start immediately
 or an error will be displayed indicating why the ROM could not be loaded.
 
+# Mappers
+
+iNES mappers [0 (NROM)](https://wiki.nesdev.com/w/index.php/NROM) 
+and [1 (MMC1)](https://wiki.nesdev.com/w/index.php/MMC1) are currently the only 
+supported mappers.
+
 # Limitations
 
 - The NES APU is currently not implemented meaning no audio.
-- Mapper 0 is currently the only mapper supported.
 
 # Controls
 
