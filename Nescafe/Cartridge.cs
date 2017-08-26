@@ -21,6 +21,8 @@ namespace Nescafe
         public int ChrBanks { get; private set; }
 
         public bool VerticalVramMirroring { get; private set; }
+        public bool BatteryBackedMemory { get; private set; }
+
         public bool UsesChrRam { get; private set; }
 
         int _mapperNumber;
@@ -149,6 +151,9 @@ namespace Nescafe
             _flags6 = reader.ReadByte();
             VerticalVramMirroring = (_flags6 & VerticalVramMirrorFlag) != 0;
             System.Console.WriteLine("VRAM mirroring type: " + (VerticalVramMirroring ? "vertical" : "horizontal"));
+
+            BatteryBackedMemory = (_flags6 & 0x02) != 0;
+            if (BatteryBackedMemory) System.Console.WriteLine("Cartridge contains battery backed persistent memory");
 
             // Flags 7
             _flags7 = reader.ReadByte();
