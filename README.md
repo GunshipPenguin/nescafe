@@ -13,6 +13,9 @@ drinking large quantities of coffee.
             <img src="https://i.imgur.com/xrJ6Yir.gif" width="256px">
         </td>
         <td>
+            <img src="https://i.imgur.com/Wjd4onH.gif" width="256px">
+        </td>
+        <td>
             <img src="https://i.imgur.com/rYfov9J.gif" width="256px">
         </td>
     </tr>
