@@ -8,10 +8,6 @@ namespace Nescafe
     {
         const int HeaderMagic = 0x1A53454E;
 
-        // Flags
-        const uint TrainerFlag = 1 << 3;
-        const uint VerticalVramMirrorFlag = 1 << 0;
-
         byte[] _prgRom;
         byte[] _chr;
 
@@ -33,11 +29,8 @@ namespace Nescafe
 
         public bool Invalid { get; private set; }
 
-        int _prgRamSize;
-
         int _flags6;
         int _flags7;
-        int _flags9;
 
         public Cartridge(string path)
         {
@@ -101,7 +94,7 @@ namespace Nescafe
         void LoadPrgRom(BinaryReader reader)
         {
             // Add 512 byte trainer offset (if present as specified in _flags6)
-            int _prgRomOffset = ((_flags6 & TrainerFlag) == 0) ? 16 : 16 + 512;
+            int _prgRomOffset = ContainsTrainer ? 16 + 512 : 16;
 
             reader.BaseStream.Seek(_prgRomOffset, SeekOrigin.Begin);
 
@@ -160,7 +153,7 @@ namespace Nescafe
             // ||||+----1: Ignore mirroring control or above mirroring bit; instead provide four - screen VRAM
             // ++++---- - Lower nybble of mapper number
             _flags6 = reader.ReadByte();
-            VerticalVramMirroring = (_flags6 & VerticalVramMirrorFlag) != 0;
+            VerticalVramMirroring = (_flags6 & 0x01) != 0;
             System.Console.WriteLine("VRAM mirroring type: " + (VerticalVramMirroring ? "vertical" : "horizontal"));
 
             BatteryBackedMemory = (_flags6 & 0x02) != 0;
@@ -179,13 +172,7 @@ namespace Nescafe
             _flags7 = reader.ReadByte();
 
             // Mapper Number
-            _mapperNumber = (int)(_flags7 & 0xF0 | (_flags6 >> 4 & 0xF));
-
-            // Size of PRG RAM
-            _prgRamSize = reader.ReadByte();
-
-            // Flags 9
-            _flags9 = reader.ReadByte();
+            _mapperNumber = _flags7 & 0xF0 | (_flags6 >> 4 & 0xF);
         }
     }   
 }
