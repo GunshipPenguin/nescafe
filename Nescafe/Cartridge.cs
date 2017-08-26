@@ -151,17 +151,31 @@ namespace Nescafe
             }
 
             // Flags 6
+            // 76543210
+            // ||||||||
+            // |||||||+-Mirroring: 0: horizontal(vertical arrangement)(CIRAM A10 = PPU A11)
+            // |||||||             1: vertical(horizontal arrangement)(CIRAM A10 = PPU A10)
+            // ||||||+--1: Cartridge contains battery - backed PRG RAM($6000 - 7FFF) or other persistent memory
+            // |||||+---1: 512 - byte trainer at $7000 -$71FF(stored before PRG data)
+            // ||||+----1: Ignore mirroring control or above mirroring bit; instead provide four - screen VRAM
+            // ++++---- - Lower nybble of mapper number
             _flags6 = reader.ReadByte();
             VerticalVramMirroring = (_flags6 & VerticalVramMirrorFlag) != 0;
             System.Console.WriteLine("VRAM mirroring type: " + (VerticalVramMirroring ? "vertical" : "horizontal"));
 
-            ContainsTrainer = (_flags6 & 0x04) != 0;
-            if (ContainsTrainer) System.Console.WriteLine("Cartridge contains a 512 byte trainer");
-
             BatteryBackedMemory = (_flags6 & 0x02) != 0;
             if (BatteryBackedMemory) System.Console.WriteLine("Cartridge contains battery backed persistent memory");
 
+            ContainsTrainer = (_flags6 & 0x04) != 0;
+            if (ContainsTrainer) System.Console.WriteLine("Cartridge contains a 512 byte trainer");
+
             // Flags 7
+            // 76543210
+            // ||||||||
+            // |||||||+-VS Unisystem
+            // ||||||+--PlayChoice - 10(8KB of Hint Screen data stored after CHR data)
+            // ||||++---If equal to 2, flags 8 - 15 are in NES 2.0 format
+            // ++++---- - Upper nybble of mapper number
             _flags7 = reader.ReadByte();
 
             // Mapper Number
