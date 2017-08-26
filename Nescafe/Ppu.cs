@@ -342,7 +342,9 @@ namespace Nescafe
 
             _numSprites = 0;
             int yPos = _scanline;
-            for (int i = 0; i < _oam.Length; i += 4)
+
+            // Sprite evaluation starts at the current OAM address and goes to the end of OAM (256 bytes)
+            for (int i = _oamAddr; i < (256 - _oamAddr); i += 4)
             {
                 byte spriteYTop = _oam[i];
 
@@ -359,7 +361,7 @@ namespace Nescafe
                     else
                     {
                         Array.Copy(_oam, i, _sprites, _numSprites * 4, 4);
-                        _spriteIndicies[_numSprites] = i / 4;
+                        _spriteIndicies[_numSprites] = (i - _oamAddr) / 4;
                         _numSprites++;
                         
                     }
@@ -561,6 +563,8 @@ namespace Nescafe
 
                 }
 
+                // OAMADDR is set to 0 during each of ticks 257-320 (the sprite tile loading interval) of the pre-render and visible scanlines. 
+                if (_cycle > 257 && _cycle <= 320 && (preRenderScanline || renderScanline)) _oamAddr = 0;
 
                 // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
                 if (_cycle == 257 && (renderScanline || preRenderScanline)) CopyHorizPositionData();
@@ -728,7 +732,7 @@ namespace Nescafe
         void WriteOamDma(byte data)
         {
             ushort startAddr = (ushort)(data << 8);
-            _console.CpuMemory.ReadBuf(_oam, startAddr, 256);
+            _console.CpuMemory.ReadBufWrapping(_oam, _oamAddr, startAddr, 256);
 
             // OAM DMA always takes at least 513 CPU cycles
             _console.Cpu.AddIdleCycles(513);

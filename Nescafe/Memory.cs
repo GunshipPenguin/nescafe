@@ -14,6 +14,22 @@
             }
         }
 
+        public void ReadBufWrapping(byte[] buffer, int startIndex, ushort startAddress, int size)
+        {
+            int index = startIndex;
+            int bytesRead = 0;
+            ushort address = startAddress;
+            while (bytesRead < size)
+            {
+                if (index >= buffer.Length) index = 0;
+                buffer[index] = Read(address);
+
+                address++;
+                bytesRead++;
+                index++;
+            }
+        }
+
         public ushort Read16(ushort address)
         {
             byte lo = Read(address);
