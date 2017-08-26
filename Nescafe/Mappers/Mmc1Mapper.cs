@@ -60,11 +60,11 @@ namespace Nescafe.Mappers
             {
                 // TODO: Implement This
                 //    throw new NotImplementedException("PRG RAM not implemented");
-                data = 0;
+                data = _cartridge.ReadPrgRam(address - 0x6000);
             }
             else if (address >= 0x8000 && address <= 0xFFFF) // 2 PRG ROM banks
             {
-   
+  
                 address -= 0x8000;
                 int offset = (address / 0x4000) == 0 ? _prgBank0Offset : _prgBank1Offset;
                 offset += address % 0x4000;
@@ -89,7 +89,7 @@ namespace Nescafe.Mappers
             }
             else if (address >= 0x6000 && address <= 0x7FFF)
             {
-                
+                _cartridge.WritePrgRam(address - 0x6000, data);
             }
             else if (address >= 0x8000) // Connected to common shift register
             {

@@ -43,6 +43,8 @@ namespace Nescafe
             LoadPrgRom(reader);
             LoadChr(reader);
             SetMapper();
+
+            _prgRam = new byte[8192];
         }
 
         void SetMapper()
@@ -68,6 +70,16 @@ namespace Nescafe
         public byte ReadPrgRom(int address)
         {
             return _prgRom[address];
+        }
+
+        public byte ReadPrgRam(int address)
+        {
+            return _prgRam[address];
+        }
+
+        public void WritePrgRam(int address, byte data)
+        {
+            _prgRam[address] = data;
         }
 
         public byte ReadChr(int address)
