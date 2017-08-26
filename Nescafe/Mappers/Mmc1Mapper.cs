@@ -58,8 +58,6 @@ namespace Nescafe.Mappers
             }
             else if (address >= 0x6000 && address <= 0x7FFF) // 8 KB PRG RAM bank (CPU) $6000-$7FFF
             {
-                // TODO: Implement This
-                //    throw new NotImplementedException("PRG RAM not implemented");
                 data = _cartridge.ReadPrgRam(address - 0x6000);
             }
             else if (address >= 0x8000 && address <= 0xFFFF) // 2 PRG ROM banks
