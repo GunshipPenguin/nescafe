@@ -13,6 +13,7 @@ namespace Nescafe
         byte[] _oam;
         ushort _oamAddr;
         byte[] _sprites;
+        int[] _spriteIndicies;
         int _numSprites;
 
         int _scanline;
@@ -85,6 +86,7 @@ namespace Nescafe
 
             _oam = new byte[256];
             _sprites = new byte[32];
+            _spriteIndicies = new int[8];
         }
 
         public void Reset()
@@ -168,11 +170,15 @@ namespace Nescafe
 
         byte GetSpritePixelData(out int spriteIndex)
         {
-            spriteIndex = 0;
+            spriteIndex = 1;
             if (_flagShowSprites == 0) return 0;
 
             int xPos = _cycle - 1;
             int yPos = _scanline - 1;
+
+            // 8x8 sprites all come from the same pattern table as specified by a write to PPUCTRL
+            // 8x16 sprites come from a pattern table defined in their OAM data
+            ushort _currSpritePatternTableAddr = _spritePatternTableAddress;
 
             // Get sprite pattern bitfield
             for (int i = 0; i < _numSprites * 4; i += 4)
@@ -183,14 +189,27 @@ namespace Nescafe
                 if (offset <= 7 && offset >= 0)
                 {
                     // Found intersecting sprite
-                    byte patternIndex = _sprites[i + 1];
                     int yOffset = yPos - _sprites[i];
 
-                    ushort patternAddress = (ushort)(_spritePatternTableAddress + (patternIndex * 16));
+                    byte patternIndex;
+
+                    // Set the pattern table and index according to whether or not sprites
+                    // ar 8x8 or 8x16
+                    if (_flagSpriteSize == 1)
+                    {
+                        _currSpritePatternTableAddr = (ushort)((_sprites[i + 1] & 1) * 0x1000);
+                        patternIndex = (byte)(_sprites[i + 1] & 0xFE);
+                    }
+                    else
+                    {
+                        patternIndex = (byte)(_sprites[i + 1]);
+                    }
+
+                    ushort patternAddress = (ushort)(_currSpritePatternTableAddr + (patternIndex * 16));
 
                     bool flipHoriz = (_sprites[i + 2] & 0x40) != 0;
                     bool flipVert = (_sprites[i + 2] & 0x80) != 0;
-                    int colorNum = GetPatternPixel(patternAddress, offset, yOffset, flipHoriz, flipVert);
+                    int colorNum = GetSpritePatternPixel(patternAddress, offset, yOffset, flipHoriz, flipVert);
 
                     // Handle transparent sprites
                     if (colorNum == 0)
@@ -212,13 +231,13 @@ namespace Nescafe
         void CopyHorizPositionData()
         {
             // v: ....F.. ...EDCBA = t: ....F.. ...EDCBA
-            v = (ushort)((v & 0x7BE0) | t);
+            v = (ushort)((v & 0x7BE0) | (t & 0x041F));
         }
 
         void CopyVertPositionData()
         {
             // v: IHGF.ED CBA..... = t: IHGF.ED CBA.....
-            v = (ushort)((v & 0x041F) | t);
+            v = (ushort)((v & 0x041F) | (t & 0x7BE0));
         }
 
         int CoarseX()
@@ -236,14 +255,18 @@ namespace Nescafe
             return (v >> 12) & 0x7;
         }
 
-        int GetPatternPixel(ushort patternAddr, int xPos, int yPos, bool flipHoriz = false, bool flipVert = false)
+        int GetSpritePatternPixel(ushort patternAddr, int xPos, int yPos, bool flipHoriz = false, bool flipVert = false)
         {
+            int h = _flagSpriteSize == 0 ? 7 : 15;
+
             // Flip x and y if needed
             xPos = flipHoriz ? 7 - xPos : xPos;
-            yPos = flipVert ? 7 - yPos : yPos;
+            yPos = flipVert ? h - yPos : yPos;
 
-            // First byte in bitfield
-            ushort yAddr = (ushort)(patternAddr + yPos);
+            // First byte in bitfield, wrapping accordingly for y > 7 (8x16 sprites)
+            ushort yAddr;
+            if (yPos <= 7) yAddr = (ushort)(patternAddr + yPos);
+            else yAddr = (ushort)(patternAddr + 16 + (yPos - 8)); // Go to next tile for 8x16 sprites
 
             // Read the 2 bytes in the bitfield for the y coordinate
             byte[] pattern = new byte[2];
@@ -278,7 +301,7 @@ namespace Nescafe
             }
             else
             {
-                v = (ushort)(v & ~0x7000u & 0xFFFF); // Set fine Y to 0
+                v = (ushort)(v & ~0x7000); // Set fine Y to 0
                 int y = (v & 0x03E0) >> 5; // y = coarse Y
                 if (y == 29)
                 {
@@ -292,36 +315,42 @@ namespace Nescafe
                 else
                 {
                     y += 1; // Increment coarse Y
-                    v = (ushort)((v & ~0x03E0) | (y << 5)); // Put coarse Y back into v
                 }
+                v = (ushort)((v & ~0x03E0) | (y << 5)); // Put coarse Y back into v
             }
         }
 
         void EvalSprites()
         {
+            Array.Clear(_sprites, 0, _sprites.Length);
+            Array.Clear(_spriteIndicies, 0, _spriteIndicies.Length);
+
+            // 8x8 or 8x16 sprites
+            int h = _flagSpriteSize == 0 ? 7 : 15;
+
             _numSprites = 0;
             int yPos = _scanline;
-
             for (int i = 0; i < _oam.Length; i += 4)
             {
-                if (_numSprites == 8)
-                {
-                    _flagSpriteOverflow = 1;
-                    break;
-                }
-
                 byte spriteYTop = _oam[i];
-
-                // spriteYTop == 0 indicates that this is not a sprite (ie. no more sprites after)
-                if (spriteYTop == 0) break;
 
                 int offset = yPos - spriteYTop;
 
                 // If this sprite is on the next scanline, copy it to the _sprites array for rendering
-                if (offset <= 7 && offset >= 0)
+                if (offset <= h && offset >= 0)
                 {
-                    Array.Copy(_oam, i, _sprites, _numSprites * 4, 4);
-                    _numSprites++;
+                    if (_numSprites == 8)
+                    {
+                        _flagSpriteOverflow = 1;
+                        break;
+                    } 
+                    else
+                    {
+                        Array.Copy(_oam, i, _sprites, _numSprites * 4, 4);
+                        _spriteIndicies[_numSprites] = i / 4;
+                        _numSprites++;
+                        
+                    }
                 }
             }
         }
@@ -331,8 +360,9 @@ namespace Nescafe
             // Get pixel data (4 bits of tile shift register as specified by x)
             byte bgPixelData = (byte)((_tileShiftReg >> (x * 4)) & 0xF);
 
-            int spriteIndex;
-            byte spritePixelData = GetSpritePixelData(out spriteIndex);
+            int spriteScanlineIndex;
+            byte spritePixelData = GetSpritePixelData(out spriteScanlineIndex);
+            bool isSpriteZero = _spriteIndicies[spriteScanlineIndex] == 0;
 
             int bgColorNum = bgPixelData & 0x03;
             int spriteColorNum = spritePixelData & 0x03;
@@ -349,11 +379,11 @@ namespace Nescafe
                 if (spriteColorNum == 0) color = LookupBackgroundColor(bgPixelData);
                 else // Both pixels opaque, choose depending on sprite priority
                 {
-                    // Set sprite0hit if spriteIndex is 0
-                    if (spriteIndex == 0) _flagSpriteZeroHit = 1;
+                    // Set sprite zero hit flag
+                    if (isSpriteZero) _flagSpriteZeroHit = 1;
 
                     // Get sprite priority
-                    int priority = (_sprites[(spriteIndex * 4) + 2] >> 5) & 1;
+                    int priority = (_sprites[(spriteScanlineIndex * 4) + 2] >> 5) & 1;
                     if (priority == 1) color = LookupBackgroundColor(bgPixelData);
                     else color = LookupSpriteColor(spritePixelData);
                 }
@@ -479,11 +509,15 @@ namespace Nescafe
                 _flagSpriteZeroHit = 0;
             }
 
-            // Evaluate sprites at cycle 257
-            if (_cycle == 257 && renderScanline) EvalSprites();
-
             if (renderingEnabled)
             {
+                // Evaluate sprites at cycle 257 of each render scanline
+                if (_cycle == 257)
+                {
+                    if (renderScanline) EvalSprites();
+                    else _numSprites = 0;
+                }
+
                 if (renderCycle && renderScanline) RenderPixel();
 
                 // Read rendering data into internal latches and update _tileShiftReg
@@ -512,10 +546,12 @@ namespace Nescafe
                             if (_cycle == 256) IncrementY();
                             break;
                     }
+
                 }
 
-                 // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
-                if (_cycle == 257) CopyHorizPositionData();
+
+                // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
+                if (_cycle == 257 && (renderScanline || preRenderScanline)) CopyHorizPositionData();
 
                 // Copy vertical position data from t to v repeatedly from cycle 280 to 304 (if rendering is enabled)
                 if (_cycle >= 280 && _cycle <= 304 && _scanline == 261) CopyVertPositionData();

@@ -70,7 +70,7 @@ namespace Nescafe
                 if (!cartridge.Invalid)
                 {
                     _console.LoadCartridge(cartridge);
-                    Text = "Nescafé - " + openFileDialog.SafeFileName;
+                    Text = "NEScafé - " + openFileDialog.SafeFileName;
                     StartConsole();
                 }
                 else

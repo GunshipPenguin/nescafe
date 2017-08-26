@@ -7,9 +7,10 @@ namespace Nescafe.Mappers
         public NromMapper(Cartridge cartridge)
         {
             _cartridge = cartridge;
+            _vramMirroringType = cartridge.VerticalVramMirroring ? VramMirroring.Vertical : VramMirroring.Horizontal;
         }
 
-        ushort AddressToPrgRomIndex(ushort address)
+        int AddressToPrgRomIndex(ushort address)
         {
             ushort mappedAddress = (ushort)(address - 0x8000); // PRG banks start at 0x8000
             return _cartridge.PrgRomBanks == 1 ? (ushort)(mappedAddress % 16384) : mappedAddress; // Wrap if only 1 PRG bank
