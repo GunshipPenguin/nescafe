@@ -176,6 +176,10 @@ namespace Nescafe
             int xPos = _cycle - 1;
             int yPos = _scanline - 1;
 
+            // 8x8 sprites all come from the same pattern table as specified by a write to PPUCTRL
+            // 8x16 sprites come from a pattern table defined in their OAM data
+            ushort _currSpritePatternTableAddr = _spritePatternTableAddress;
+
             // Get sprite pattern bitfield
             for (int i = 0; i < _numSprites * 4; i += 4)
             {
@@ -185,10 +189,23 @@ namespace Nescafe
                 if (offset <= 7 && offset >= 0)
                 {
                     // Found intersecting sprite
-                    byte patternIndex = _sprites[i + 1];
                     int yOffset = yPos - _sprites[i];
 
-                    ushort patternAddress = (ushort)(_spritePatternTableAddress + (patternIndex * 16));
+                    byte patternIndex;
+
+                    // Set the pattern table and index according to whether or not sprites
+                    // ar 8x8 or 8x16
+                    if (_flagSpriteSize == 1)
+                    {
+                        _currSpritePatternTableAddr = (ushort)((_sprites[i + 1] & 1) * 0x1000);
+                        patternIndex = (byte)(_sprites[i + 1] & 0xFE);
+                    }
+                    else
+                    {
+                        patternIndex = (byte)(_sprites[i + 1]);
+                    }
+
+                    ushort patternAddress = (ushort)(_currSpritePatternTableAddr + (patternIndex * 16));
 
                     bool flipHoriz = (_sprites[i + 2] & 0x40) != 0;
                     bool flipVert = (_sprites[i + 2] & 0x80) != 0;
