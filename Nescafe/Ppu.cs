@@ -168,13 +168,25 @@ namespace Nescafe
             return _memory.Read(paletteAddress);
         }
 
+        byte GetBgPixelData()
+        {
+            int xPos = _cycle - 1;
+
+            if (_flagShowBackground == 0) return 0;
+            if (_flagShowBackgroundLeft == 0 && xPos < 8) return 0;
+
+            return (byte)((_tileShiftReg >> (x * 4)) & 0xF);
+        }
+
         byte GetSpritePixelData(out int spriteIndex)
         {
-            spriteIndex = 1;
-            if (_flagShowSprites == 0) return 0;
-
             int xPos = _cycle - 1;
             int yPos = _scanline - 1;
+
+            spriteIndex = 0;
+
+            if (_flagShowSprites == 0) return 0;
+            if (_flagShowSpritesLeft == 0 && xPos < 8) return 0;
 
             // 8x8 sprites all come from the same pattern table as specified by a write to PPUCTRL
             // 8x16 sprites come from a pattern table defined in their OAM data
@@ -358,7 +370,7 @@ namespace Nescafe
         void RenderPixel()
         {
             // Get pixel data (4 bits of tile shift register as specified by x)
-            byte bgPixelData = (byte)((_tileShiftReg >> (x * 4)) & 0xF);
+            byte bgPixelData = GetBgPixelData();
 
             int spriteScanlineIndex;
             byte spritePixelData = GetSpritePixelData(out spriteScanlineIndex);
