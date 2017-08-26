@@ -21,7 +21,10 @@ namespace Nescafe
         public int ChrBanks { get; private set; }
 
         public bool VerticalVramMirroring { get; private set; }
+
         public bool BatteryBackedMemory { get; private set; }
+
+        public bool ContainsTrainer { get; private set; }
 
         public bool UsesChrRam { get; private set; }
 
@@ -151,6 +154,9 @@ namespace Nescafe
             _flags6 = reader.ReadByte();
             VerticalVramMirroring = (_flags6 & VerticalVramMirrorFlag) != 0;
             System.Console.WriteLine("VRAM mirroring type: " + (VerticalVramMirroring ? "vertical" : "horizontal"));
+
+            ContainsTrainer = (_flags6 & 0x04) != 0;
+            if (ContainsTrainer) System.Console.WriteLine("Cartridge contains a 512 byte trainer");
 
             BatteryBackedMemory = (_flags6 & 0x02) != 0;
             if (BatteryBackedMemory) System.Console.WriteLine("Cartridge contains battery backed persistent memory");
