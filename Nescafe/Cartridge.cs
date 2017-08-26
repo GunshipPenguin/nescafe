@@ -67,30 +67,30 @@ namespace Nescafe
             }
         }
 
-        public byte ReadPrgRom(int address)
+        public byte ReadPrgRom(int index)
         {
-            return _prgRom[address];
+            return _prgRom[index];
         }
 
-        public byte ReadPrgRam(int address)
+        public byte ReadPrgRam(int index)
         {
-            return _prgRam[address];
+            return _prgRam[index];
         }
 
-        public void WritePrgRam(int address, byte data)
+        public void WritePrgRam(int index, byte data)
         {
-            _prgRam[address] = data;
+            _prgRam[index] = data;
         }
 
-        public byte ReadChr(int address)
+        public byte ReadChr(int index)
         {
-            return _chr[address];
+            return _chr[index];
         }
 
-        public void WriteChr(int address, byte data)
+        public void WriteChr(int index, byte data)
         {
-            if (!UsesChrRam) throw new Exception("Attempted write to CHR ROM at address " + address.ToString("X4"));
-            else _chr[address] = data;
+            if (!UsesChrRam) throw new Exception("Attempted write to CHR ROM at index " + index.ToString("X4"));
+            else _chr[index] = data;
         }
 
         void LoadPrgRom(BinaryReader reader)
