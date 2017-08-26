@@ -6,7 +6,7 @@ namespace Nescafe
 {
     public class Cartridge
     {
-        const int HeaderMagic = 0x1a53454e;
+        const int HeaderMagic = 0x1A53454E;
 
         // Flags
         const uint TrainerFlag = 1 << 3;
