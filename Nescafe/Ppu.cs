@@ -16,8 +16,8 @@ namespace Nescafe
         int[] _spriteIndicies;
         int _numSprites;
 
-        int _scanline;
-        int _cycle;
+        public int Scanline { get; private set; }
+        public int Cycle { get; private set; }
 
         // Base background nametable address
         ushort _baseNametableAddress;
@@ -93,8 +93,8 @@ namespace Nescafe
         {
             Array.Clear(BitmapData, 0, BitmapData.Length);
 
-            _scanline = 240;
-            _cycle = 340;
+            Scanline = 240;
+            Cycle = 340;
 
             _nmiOccurred = 0;
             _nmiOutput = 0;
@@ -170,7 +170,7 @@ namespace Nescafe
 
         byte GetBgPixelData()
         {
-            int xPos = _cycle - 1;
+            int xPos = Cycle - 1;
 
             if (_flagShowBackground == 0) return 0;
             if (_flagShowBackgroundLeft == 0 && xPos < 8) return 0;
@@ -180,8 +180,8 @@ namespace Nescafe
 
         byte GetSpritePixelData(out int spriteIndex)
         {
-            int xPos = _cycle - 1;
-            int yPos = _scanline - 1;
+            int xPos = Cycle - 1;
+            int yPos = Scanline - 1;
 
             spriteIndex = 0;
 
@@ -341,7 +341,7 @@ namespace Nescafe
             int h = _flagSpriteSize == 0 ? 7 : 15;
 
             _numSprites = 0;
-            int yPos = _scanline;
+            int yPos = Scanline;
 
             // Sprite evaluation starts at the current OAM address and goes to the end of OAM (256 bytes)
             for (int i = _oamAddr; i < (256 - _oamAddr); i += 4)
@@ -403,7 +403,7 @@ namespace Nescafe
                 }
             }
 
-            BitmapData[_scanline * 256 + (_cycle - 1)] = color;
+            BitmapData[Scanline * 256 + (Cycle - 1)] = color;
         }
 
         void FetchNametableByte()
@@ -458,7 +458,7 @@ namespace Nescafe
         void UpdateCounters()
         {
             // Trigger an NMI at the start of _scanline 241 if VBLANK NMI's are enabled
-            if (_scanline == 241 && _cycle == 1)
+            if (Scanline == 241 && Cycle == 1)
             {
                 _nmiOccurred = 1;
                 if (_nmiOutput != 0) _console.Cpu.TriggerNmi();
@@ -469,32 +469,32 @@ namespace Nescafe
             // Skip last cycle of prerender scanline on odd frames
             if (renderingEnabled)
             {
-                if (_scanline == 261 && f == 1 && _cycle == 339)
+                if (Scanline == 261 && f == 1 && Cycle == 339)
                 {
                     f ^= 1;
-                    _scanline = 0;
-                    _cycle = -1;
+                    Scanline = 0;
+                    Cycle = -1;
                     _console.DrawFrame();
                     return;
                 }
             }
-            _cycle++;
+            Cycle++;
 
             // Reset cycle (and scanline if scanline == 260)
             // Also set to next frame if at end of last _scanline
-            if (_cycle > 340)
+            if (Cycle > 340)
             {
-                if (_scanline == 261) // Last scanline, reset to upper left corner
+                if (Scanline == 261) // Last scanline, reset to upper left corner
                 {
                     f ^= 1;
-                    _scanline = 0;
-                    _cycle = -1;
+                    Scanline = 0;
+                    Cycle = -1;
                     _console.DrawFrame();
                 }
                 else // Not on last scanline
                 {
-                    _cycle = -1;
-                    _scanline++;
+                    Cycle = -1;
+                    Scanline++;
                 }
             }
         }
@@ -505,18 +505,18 @@ namespace Nescafe
 
             // Cycle types
             bool renderingEnabled = (_flagShowBackground != 0) || (_flagShowSprites != 0);
-            bool renderCycle = _cycle > 0 && _cycle <= 256;
-            bool preFetchCycle = _cycle >= 321 && _cycle <= 336;
+            bool renderCycle = Cycle > 0 && Cycle <= 256;
+            bool preFetchCycle = Cycle >= 321 && Cycle <= 336;
             bool fetchCycle = renderCycle || preFetchCycle;
 
             // Scanline types
-            bool renderScanline = _scanline >= 0 && _scanline < 240;
-            bool idleScanline = _scanline == 240;
-            bool vBlankScanline = _scanline > 240;
-            bool preRenderScanline = _scanline == 261;
+            bool renderScanline = Scanline >= 0 && Scanline < 240;
+            bool idleScanline = Scanline == 240;
+            bool vBlankScanline = Scanline > 240;
+            bool preRenderScanline = Scanline == 261;
 
             // nmiOccurred flag cleared on prerender scanline at cycle 1
-            if (preRenderScanline && _cycle == 1)
+            if (preRenderScanline && Cycle == 1)
             {
                 _nmiOccurred = 0;
                 _flagSpriteOverflow = 0;
@@ -526,7 +526,7 @@ namespace Nescafe
             if (renderingEnabled)
             {
                 // Evaluate sprites at cycle 257 of each render scanline
-                if (_cycle == 257)
+                if (Cycle == 257)
                 {
                     if (renderScanline) EvalSprites();
                     else _numSprites = 0;
@@ -540,7 +540,7 @@ namespace Nescafe
                 if (fetchCycle && (renderScanline || preRenderScanline))
                 {
                     _tileShiftReg >>= 4;
-                    switch (_cycle % 8)
+                    switch (Cycle % 8)
                     {
                         case 1:
                             FetchNametableByte();
@@ -557,20 +557,20 @@ namespace Nescafe
                         case 0:
                             StoreTileData();
                             IncrementX();
-                            if (_cycle == 256) IncrementY();
+                            if (Cycle == 256) IncrementY();
                             break;
                     }
 
                 }
 
                 // OAMADDR is set to 0 during each of ticks 257-320 (the sprite tile loading interval) of the pre-render and visible scanlines. 
-                if (_cycle > 257 && _cycle <= 320 && (preRenderScanline || renderScanline)) _oamAddr = 0;
+                if (Cycle > 257 && Cycle <= 320 && (preRenderScanline || renderScanline)) _oamAddr = 0;
 
                 // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
-                if (_cycle == 257 && (renderScanline || preRenderScanline)) CopyHorizPositionData();
+                if (Cycle == 257 && (renderScanline || preRenderScanline)) CopyHorizPositionData();
 
                 // Copy vertical position data from t to v repeatedly from cycle 280 to 304 (if rendering is enabled)
-                if (_cycle >= 280 && _cycle <= 304 && _scanline == 261) CopyVertPositionData();
+                if (Cycle >= 280 && Cycle <= 304 && Scanline == 261) CopyVertPositionData();
             }
         }
 
