@@ -38,9 +38,11 @@ or an error will be displayed indicating why the ROM could not be loaded.
 
 # Mappers
 
-iNES mappers [0 (NROM)](https://wiki.nesdev.com/w/index.php/NROM) 
-and [1 (MMC1)](https://wiki.nesdev.com/w/index.php/MMC1) are currently the only 
-supported mappers.
+The following iNES mappers are supported:
+
+- [0 (NROM)](https://wiki.nesdev.com/w/index.php/NROM)
+- [1 (MMC1)](https://wiki.nesdev.com/w/index.php/MMC1)
+- [2 (UxROM)](https://wiki.nesdev.com/w/index.php/UxROM)
 
 # Limitations
 
