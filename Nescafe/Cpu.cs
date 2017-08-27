@@ -116,6 +116,7 @@ namespace Nescafe
         bool N; // Negative flag
 
         // Interrupts
+        bool irqInterrupt;
         bool nmiInterrupt;
 
         // Current number of cycles executed
@@ -173,6 +174,11 @@ namespace Nescafe
             nmiInterrupt = true;
         }
 
+        public void TriggerIrq()
+        {
+            if (!I) irqInterrupt = true;
+        }
+
         public void AddIdleCycles(int idleCycles)
         {
             _idle += idleCycles;
@@ -185,6 +191,9 @@ namespace Nescafe
                 _idle--;
                 return 1;
             }
+
+            if (irqInterrupt) Irq();
+            irqInterrupt = false;
 
             if (nmiInterrupt) Nmi();
             nmiInterrupt = false;
@@ -342,6 +351,14 @@ namespace Nescafe
             PushStack16(PC);
             PushStack(GetStatusFlags());
             PC = _memory.Read16(0xFFFA);
+            I = true;
+        }
+
+        void Irq()
+        {
+            PushStack16(PC);
+            PushStack(GetStatusFlags());
+            PC = _memory.Read16(0xFFFE);
             I = true;
         }
 
