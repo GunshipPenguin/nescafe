@@ -44,6 +44,7 @@
     <Compile Include="Mappers\NromMapper.cs" />
     <Compile Include="Mappers\Mapper.cs" />
     <Compile Include="Mappers\Mmc1Mapper.cs" />
+    <Compile Include="Mappers\UxRomMapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />

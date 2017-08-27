@@ -58,6 +58,10 @@ namespace Nescafe
                     System.Console.WriteLine(" (MMC1) Supported!");
                     Mapper = new Mmc1Mapper(this);
                     break;
+                case 2:
+                    System.Console.WriteLine(" (UxROM) Supported!");
+                    Mapper = new UxRomMapper(this);
+                    break;
                 default:
                     System.Console.WriteLine(" mapper is not supported");
                     Invalid = true;
