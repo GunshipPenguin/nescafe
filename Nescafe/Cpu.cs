@@ -140,7 +140,7 @@ namespace Nescafe
                 jsr, and, ___, ___, bit, and, rol, ___, plp, and, rol, ___, bit, and, rol, ___, // 2
                 bmi, and, ___, ___, ___, and, rol, ___, sec, and, ___, ___, ___, and, rol, ___, // 3
                 rti, eor, ___, ___, ___, eor, lsr, ___, pha, eor, lsr, ___, jmp, eor, lsr, ___, // 4
-                bvc, eor, ___, ___, ___, eor, lsr, ___, ___, eor, ___, ___, ___, eor, lsr, ___, // 5
+                bvc, eor, ___, ___, ___, eor, lsr, ___, cli, eor, ___, ___, ___, eor, lsr, ___, // 5
                 rts, adc, ___, ___, ___, adc, ror, ___, pla, adc, ror, ___, jmp, adc, ror, ___, // 6
                 bvs, adc, ___, ___, ___, adc, ror, ___, sei, adc, ___, ___, ___, adc, ror, ___, // 7
                 ___, sta, ___, ___, sty, sta, stx, ___, dey, ___, txa, ___, sty, sta, stx, ___, // 8
@@ -576,6 +576,11 @@ namespace Nescafe
         void sed(AddressMode mode, ushort address)
         {
             D = true;
+        }
+
+        void cli(AddressMode mode, ushort address)
+        {
+            I = false;
         }
 
         void sei(AddressMode mode, ushort address)
