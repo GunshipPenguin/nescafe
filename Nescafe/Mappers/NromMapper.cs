@@ -10,7 +10,7 @@ namespace Nescafe.Mappers
         /// <summary>
         /// Construct a new NROM mapper.
         /// </summary>
-        /// <param name="console">Console.</param>
+        /// <param name="console">the console that this mapper is a part of</param>
         public NromMapper(Console console)
         {
             _console = console;
