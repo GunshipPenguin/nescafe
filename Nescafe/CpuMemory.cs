@@ -92,7 +92,7 @@ namespace Nescafe
             }
             else if (address >= 0x4020) // Handled by mapper (PRG rom, CHR rom/ram etc.)
             {
-                data = _console.Cartridge.Mapper.Read(address);
+                data = _console.Mapper.Read(address);
             }
             else // Invalid Read
             {
@@ -123,7 +123,7 @@ namespace Nescafe
             }
             else if (address >= 0x4020)
             {
-                _console.Cartridge.Mapper.Write(address, data);
+                _console.Mapper.Write(address, data);
             }
             else // Invalid Write
             {

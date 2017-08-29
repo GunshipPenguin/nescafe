@@ -13,6 +13,8 @@ namespace Nescafe
 
         byte[] _prgRam;
 
+        public Console Console { get; set; }
+
         public int PrgRomBanks { get; private set; }
         public int ChrBanks { get; private set; }
 
@@ -24,8 +26,7 @@ namespace Nescafe
 
         public bool UsesChrRam { get; private set; }
 
-        int _mapperNumber;
-        public Mapper Mapper { get; private set; }
+        public int MapperNumber { get; private set; }
 
         public bool Invalid { get; private set; }
 
@@ -40,33 +41,8 @@ namespace Nescafe
             ParseHeader(reader);
             LoadPrgRom(reader);
             LoadChr(reader);
-            SetMapper();
 
             _prgRam = new byte[8192];
-        }
-
-        void SetMapper()
-        {
-            System.Console.Write("iNES Mapper Number: " + _mapperNumber.ToString());
-            switch (_mapperNumber)
-            {
-                case 0:
-                    System.Console.WriteLine(" (NROM) Supported!");
-                    Mapper = new NromMapper(this);
-                    break;
-                case 1:
-                    System.Console.WriteLine(" (MMC1) Supported!");
-                    Mapper = new Mmc1Mapper(this);
-                    break;
-                case 2:
-                    System.Console.WriteLine(" (UxROM) Supported!");
-                    Mapper = new UxRomMapper(this);
-                    break;
-                default:
-                    System.Console.WriteLine(" mapper is not supported");
-                    Invalid = true;
-                    break;
-            }
         }
 
         public byte ReadPrgRom(int index)
@@ -176,7 +152,7 @@ namespace Nescafe
             _flags7 = reader.ReadByte();
 
             // Mapper Number
-            _mapperNumber = _flags7 & 0xF0 | (_flags6 >> 4 & 0xF);
+            MapperNumber = _flags7 & 0xF0 | (_flags6 >> 4 & 0xF);
         }
     }   
 }

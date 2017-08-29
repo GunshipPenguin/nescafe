@@ -6,17 +6,17 @@ namespace Nescafe.Mappers
         int _bank0Offset;
         int _bank1Offset;
 
-        public UxRomMapper(Cartridge cartridge)
+        public UxRomMapper(Console console)
         {
-            _cartridge = cartridge;
+            _console = console;
 
             // PRG Bank 0 is switchable
             _bank0Offset = 0;
 
             // PRG Bank 1 is always fixed to the last bank
-            _bank1Offset = (cartridge.PrgRomBanks - 1) * 0x4000;
+            _bank1Offset = (_console.Cartridge.PrgRomBanks - 1) * 0x4000;
 
-            _vramMirroringType = _cartridge.VerticalVramMirroring ? VramMirroring.Vertical : VramMirroring.Horizontal;
+            _vramMirroringType = _console.Cartridge.VerticalVramMirroring ? VramMirroring.Vertical : VramMirroring.Horizontal;
         }
 
         public override byte Read(ushort address)
@@ -24,7 +24,7 @@ namespace Nescafe.Mappers
             byte data;
             if (address < 0x2000) // CHR ROM or RAM
             {
-                data = _cartridge.ReadChr(address);
+                data = _console.Cartridge.ReadChr(address);
             }
             else if (address >= 0x6000 && address < 0x8000)
             {
@@ -33,11 +33,11 @@ namespace Nescafe.Mappers
             }
             else if (address <= 0xC000) // PRG ROM bank 0
             {
-                data = _cartridge.ReadPrgRom(_bank0Offset + (address - 0x8000));
+                data = _console.Cartridge.ReadPrgRom(_bank0Offset + (address - 0x8000));
             }
             else if (address <= 0xFFFF) // PRG ROM bank 1
             {
-                data = _cartridge.ReadPrgRom(_bank1Offset + (address - 0xC000));
+                data = _console.Cartridge.ReadPrgRom(_bank1Offset + (address - 0xC000));
             }
             else
             {
@@ -50,7 +50,7 @@ namespace Nescafe.Mappers
         {
             if (address < 0x2000) // CHR ROM or RAM
             {
-                _cartridge.WriteChr(address, data);
+                _console.Cartridge.WriteChr(address, data);
             }
             else if (address >= 0x6000 && address < 0x8000)
             {
