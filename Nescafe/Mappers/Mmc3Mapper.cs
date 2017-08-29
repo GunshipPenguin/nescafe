@@ -127,7 +127,7 @@ namespace Nescafe.Mappers
             int cycle = _console.Ppu.Cycle;
             bool renderingEnabled = _console.Ppu.RenderingEnabled;
 
-            if (renderingEnabled && cycle == 324 && scanline >= 0 && scanline < 240) ClockA12();
+            if (renderingEnabled && cycle == 260 && scanline >= 0 && scanline < 240) ClockA12();
         }
 
         void ClockA12()
