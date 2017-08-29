@@ -10,7 +10,7 @@
             SingleUpper,
         }
 
-        protected Cartridge _cartridge;
+        protected Console _console;
         protected VramMirroring _vramMirroringType;
 
         public int VramAddressToIndex(ushort address)
@@ -35,6 +35,11 @@
                     break;
             }
             return index;
+        }
+
+        public virtual void Step()
+        {
+            
         }
 
         public abstract byte Read(ushort address);

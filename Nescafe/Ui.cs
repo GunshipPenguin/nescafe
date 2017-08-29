@@ -65,11 +65,8 @@ namespace Nescafe
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                System.Console.WriteLine("Loading ROM " + openFileDialog.FileName);
-                Cartridge cartridge = new Cartridge(openFileDialog.FileName);
-                if (!cartridge.Invalid)
+                if (_console.LoadCartridge(openFileDialog.FileName))
                 {
-                    _console.LoadCartridge(cartridge);
                     Text = "NEScafé - " + openFileDialog.SafeFileName;
                     StartConsole();
                 }

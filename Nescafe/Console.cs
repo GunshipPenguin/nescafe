@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Diagnostics;
+using Nescafe.Mappers;
 
 namespace Nescafe
 {
@@ -15,6 +16,7 @@ namespace Nescafe
         public readonly Controller Controller;
 
         public Cartridge Cartridge { get; set; }
+        public Mapper Mapper { get; set; }
 
         public Action<byte[]> DrawAction { get; set; }
 
@@ -33,9 +35,37 @@ namespace Nescafe
             Ppu = new Ppu(this);
         }
 
-        public void LoadCartridge(Cartridge cartridge)
+        public bool LoadCartridge(string path)
         {
-            Cartridge = cartridge;
+            System.Console.WriteLine("Loading ROM " + path);
+
+            Cartridge = new Cartridge(path);
+            if (Cartridge.Invalid) return false;
+
+            // Set mapper
+            System.Console.Write("iNES Mapper Number: " + Cartridge.MapperNumber.ToString());
+            switch (Cartridge.MapperNumber)
+            {
+                case 0:
+                    System.Console.WriteLine(" (NROM) Supported!");
+                    Mapper = new NromMapper(this);
+                    break;
+                case 1:
+                    System.Console.WriteLine(" (MMC1) Supported!");
+                    Mapper = new Mmc1Mapper(this);
+                    break;
+                case 2:
+                    System.Console.WriteLine(" (UxROM) Supported!");
+                    Mapper = new UxRomMapper(this);
+                    break;
+                case 4:
+                    System.Console.WriteLine(" (MMC3) Supported!");
+                    Mapper = new Mmc3Mapper(this);
+                    break;
+                default:
+                    System.Console.WriteLine(" mapper is not supported");
+                    return false;
+            }
 
             Cpu.Reset();
             Ppu.Reset();
@@ -44,6 +74,7 @@ namespace Nescafe
             PpuMemory.Reset();
 
             _frameEvenOdd = false;
+            return true;
         }
 
         public void DrawFrame()
@@ -63,6 +94,7 @@ namespace Nescafe
                 for (int i = 0; i < cpuCycles * 3; i++)
                 {
                     Ppu.Step();
+                    Mapper.Step();
                 }
             }
         }

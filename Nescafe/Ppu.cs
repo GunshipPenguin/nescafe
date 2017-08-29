@@ -77,6 +77,11 @@ namespace Nescafe
         // PPUDATA buffer
         byte _ppuDataBuffer;
 
+        public bool RenderingEnabled
+        {
+            get { return _flagShowSprites != 0 || _flagShowBackground != 0; }
+        }
+
         public Ppu(Console console)
         {
             _memory = console.PpuMemory;

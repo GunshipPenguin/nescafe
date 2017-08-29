@@ -35,11 +35,11 @@ namespace Nescafe
             byte data;
             if (address < 0x2000) // CHR (ROM or RAM) pattern tables
             {
-                data = _console.Cartridge.ReadChr(address);
+                data = _console.Mapper.Read(address);
             }
             else if (address <= 0x3EFF) // Internal _vRam
             {
-                data = _vRam[_console.Cartridge.Mapper.VramAddressToIndex(address)];
+                data = _vRam[_console.Mapper.VramAddressToIndex(address)];
             }
             else if (address >= 0x3F00 && address <= 0x3FFF) // Palette RAM
             {
@@ -56,11 +56,11 @@ namespace Nescafe
         {
             if (address < 0x2000)
             {
-                _console.Cartridge.Mapper.Write(address, data);
+                _console.Mapper.Write(address, data);
             }
             else if (address >= 0x2000 && address <= 0x3EFF) // Internal VRAM
             {
-                _vRam[_console.Cartridge.Mapper.VramAddressToIndex(address)] = data;
+                _vRam[_console.Mapper.VramAddressToIndex(address)] = data;
             }
             else if (address >= 0x3F00 && address <= 0x3FFF) // Palette RAM addresses
             {

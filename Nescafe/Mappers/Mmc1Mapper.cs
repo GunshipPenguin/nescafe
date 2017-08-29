@@ -31,9 +31,10 @@ namespace Nescafe.Mappers
         // Current number of writes to internal shift register
         int _shiftCount;
 
-        public Mmc1Mapper(Cartridge cartridge)
+        public Mmc1Mapper(Console console)
         {
-            _cartridge = cartridge;
+            _console = console;
+
             _shiftReg = 0x0C;
             _controlReg = 0x00;
             _chr0Reg = 0x00;
@@ -42,7 +43,7 @@ namespace Nescafe.Mappers
 
             _shiftCount = 0;
 
-            _prgBank1Offset = (cartridge.PrgRomBanks - 1) * 0x4000;
+            _prgBank1Offset = (_console.Cartridge.PrgRomBanks - 1) * 0x4000;
 
             _vramMirroringType = VramMirroring.Horizontal;
         }
@@ -54,11 +55,11 @@ namespace Nescafe.Mappers
             {
                 int offset = (address / 0x1000) == 0 ? _chrBank0Offset : _chrBank1Offset;
                 offset += address % 0x1000;
-                data = _cartridge.ReadPrgRom(offset);
+                data = _console.Cartridge.ReadPrgRom(offset);
             }
             else if (address >= 0x6000 && address <= 0x7FFF) // 8 KB PRG RAM bank (CPU) $6000-$7FFF
             {
-                data = _cartridge.ReadPrgRam(address - 0x6000);
+                data = _console.Cartridge.ReadPrgRam(address - 0x6000);
             }
             else if (address >= 0x8000 && address <= 0xFFFF) // 2 PRG ROM banks
             {
@@ -66,7 +67,7 @@ namespace Nescafe.Mappers
                 address -= 0x8000;
                 int offset = (address / 0x4000) == 0 ? _prgBank0Offset : _prgBank1Offset;
                 offset += address % 0x4000;
-                data = _cartridge.ReadPrgRom(offset);
+                data = _console.Cartridge.ReadPrgRom(offset);
             }
             else
             {
@@ -79,15 +80,15 @@ namespace Nescafe.Mappers
         {
             if (address < 0x2000)
             {
-                if (!_cartridge.UsesChrRam) throw new Exception("Attempt to write to CHR ROM at " + address.ToString("X4"));
+                if (!_console.Cartridge.UsesChrRam) throw new Exception("Attempt to write to CHR ROM at " + address.ToString("X4"));
 
                 int offset = (address / 0x1000) == 0 ? _chrBank0Offset : _chrBank1Offset;
                 offset += address % 0x1000;
-                _cartridge.WriteChr(offset, data);
+                _console.Cartridge.WriteChr(offset, data);
             }
             else if (address >= 0x6000 && address <= 0x7FFF)
             {
-                _cartridge.WritePrgRam(address - 0x6000, data);
+                _console.Cartridge.WritePrgRam(address - 0x6000, data);
             }
             else if (address >= 0x8000) // Connected to common shift register
             {
@@ -221,7 +222,7 @@ namespace Nescafe.Mappers
                     // Switch 16 KB bank at $8000
                     _prgBank0Offset = (_prgReg & 0xF) * 0x4000;
                     // Fix last bank at $C000
-                    _prgBank1Offset = (_cartridge.PrgRomBanks - 1) * 0x4000;
+                    _prgBank1Offset = (_console.Cartridge.PrgRomBanks - 1) * 0x4000;
                     break;
             }
         }

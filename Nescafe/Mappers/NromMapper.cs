@@ -4,27 +4,27 @@ namespace Nescafe.Mappers
 {
     class NromMapper : Mapper
     {
-        public NromMapper(Cartridge cartridge)
+        public NromMapper(Console console)
         {
-            _cartridge = cartridge;
-            _vramMirroringType = cartridge.VerticalVramMirroring ? VramMirroring.Vertical : VramMirroring.Horizontal;
+            _console = console;
+            _vramMirroringType = _console.Cartridge.VerticalVramMirroring ? VramMirroring.Vertical : VramMirroring.Horizontal;
         }
 
         int AddressToPrgRomIndex(ushort address)
         {
             ushort mappedAddress = (ushort)(address - 0x8000); // PRG banks start at 0x8000
-            return _cartridge.PrgRomBanks == 1 ? (ushort)(mappedAddress % 16384) : mappedAddress; // Wrap if only 1 PRG bank
+            return _console.Cartridge.PrgRomBanks == 1 ? (ushort)(mappedAddress % 16384) : mappedAddress; // Wrap if only 1 PRG bank
         }
 
         public override byte Read(ushort address)
         {
             if (address < 0x2000) // CHR rom stored from $0000 to $1FFF
             {
-                return _cartridge.ReadChr(address);
+                return _console.Cartridge.ReadChr(address);
             }
             else if (address >= 0x8000) // PRG ROM stored at $8000 and above
             {
-                return _cartridge.ReadPrgRom(AddressToPrgRomIndex(address));
+                return _console.Cartridge.ReadPrgRom(AddressToPrgRomIndex(address));
             }
             else
             {
@@ -36,7 +36,7 @@ namespace Nescafe.Mappers
         {
             if (address < 0x2000) // CHR RAM
             {
-                _cartridge.WriteChr(address, data);
+                _console.Cartridge.WriteChr(address, data);
             }
         }
     }    
