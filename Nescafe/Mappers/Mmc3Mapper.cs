@@ -1,6 +1,9 @@
 ﻿using System;
 namespace Nescafe.Mappers
 {
+    /// <summary>
+    /// Represents Nintendo's MMC3 mapper.
+    /// </summary>
     public class Mmc3Mapper : Mapper
     {
         // Bank select register
@@ -26,6 +29,10 @@ namespace Nescafe.Mappers
         int _irqCounter;
         byte _irqCounterReload;
 
+        /// <summary>
+        /// Constructs a new MMC3 mapper.
+        /// </summary>
+        /// <param name="console">Console.</param>
         public Mmc3Mapper(Console console)
         {
             _console = console;
@@ -44,6 +51,11 @@ namespace Nescafe.Mappers
             _prgOffsets[3] = _prgOffsets[2] + 0x2000;
         }
 
+        /// <summary>
+        /// Read a byte from the specified address.
+        /// </summary>
+        /// <returns>the byte read from the specified address</returns>
+        /// <param name="address">the address to read a byte from</param>
         public override byte Read(ushort address)
         {
             byte data;
@@ -72,6 +84,11 @@ namespace Nescafe.Mappers
             return data;
         }
 
+        /// <summary>
+        /// Writes a byte to the specified address.
+        /// </summary>
+        /// <param name="address">the address to write a byte to</param>
+        /// <param name="data">the byte to write to the address</param>
         public override void Write(ushort address, byte data)
         {
             bool even = address % 2 == 0;
@@ -121,6 +138,9 @@ namespace Nescafe.Mappers
             UpdateBankOffsets();
         }
 
+        /// <summary>
+        /// Inform the mapper that a PPU step has occurred.
+        /// </summary>
         public override void Step()
         {
             int scanline = _console.Ppu.Scanline;

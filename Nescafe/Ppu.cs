@@ -2,8 +2,15 @@
 
 namespace Nescafe
 {
+    /// <summary>
+    /// Represents a NTSC PPU.
+    /// </summary>
     public class Ppu
     {
+        /// <summary>
+        /// Gets an array containing bitmap data currently drawn to the screen.
+        /// </summary>
+        /// <value>The bitmap data.</value>
         public byte[] BitmapData { get; }
 
         readonly PpuMemory _memory;
@@ -16,7 +23,16 @@ namespace Nescafe
         int[] _spriteIndicies;
         int _numSprites;
 
+        /// <summary>
+        /// Gets the current scanline number.
+        /// </summary>
+        /// <value>The current scanline number.</value>
         public int Scanline { get; private set; }
+
+        /// <summary>
+        /// Gets the cycle number on the current scanline.
+        /// </summary>
+        /// <value>The cycle number on the current scanline.</value>
         public int Cycle { get; private set; }
 
         // Base background nametable address
@@ -77,11 +93,19 @@ namespace Nescafe
         // PPUDATA buffer
         byte _ppuDataBuffer;
 
+        /// <summary>
+        /// Is <c>true</c> if rendering is currently enabled.
+        /// </summary>
+        /// <value><c>true</c> if rendering is enabled; otherwise, <c>false</c>.</value>
         public bool RenderingEnabled
         {
             get { return _flagShowSprites != 0 || _flagShowBackground != 0; }
         }
 
+        /// <summary>
+        /// Constructs a new PPU.
+        /// </summary>
+        /// <param name="console">Console that this PPU is a part of</param>
         public Ppu(Console console)
         {
             _memory = console.PpuMemory;
@@ -94,6 +118,9 @@ namespace Nescafe
             _spriteIndicies = new int[8];
         }
 
+        /// <summary>
+        /// Resets this PPU to its startup state.
+        /// </summary>
         public void Reset()
         {
             Array.Clear(BitmapData, 0, BitmapData.Length);
@@ -460,6 +487,7 @@ namespace Nescafe
             _tileShiftReg |= (data << 32);
         }
 
+        // Updates scanline and cycle counters, triggers NMI's if needed.
         void UpdateCounters()
         {
             // Trigger an NMI at the start of _scanline 241 if VBLANK NMI's are enabled
@@ -504,6 +532,9 @@ namespace Nescafe
             }
         }
 
+        /// <summary>
+        /// Executes a single PPU step.
+        /// </summary>
         public void Step()
         {
             UpdateCounters();
@@ -579,6 +610,11 @@ namespace Nescafe
             }
         }
 
+        /// <summary>
+        /// Reads a byte from the register at the specified address.
+        /// </summary>
+        /// <returns>A byte read from the register at the specified address</returns>
+        /// <param name="address">The address of the register to read from</param>
         public byte ReadFromRegister(ushort address)
         {
             byte data;
@@ -600,6 +636,11 @@ namespace Nescafe
             return data;
         }
 
+        /// <summary>
+        /// Writes a byte to the register at the specified address.
+        /// </summary>
+        /// <param name="address">The address of the register to write to</param>
+        /// <param name="data">The byte to write to the register</param>
         public void WriteToRegister(ushort address, byte data)
         {
             _lastRegisterWrite = data;

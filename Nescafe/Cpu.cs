@@ -2,6 +2,10 @@
 
 namespace Nescafe
 {
+    /// <summary>
+    /// Represents a MOS Technologies 6502 CPU with Decimal Mode disabled (as
+    /// is the case with the NES).
+    /// </summary>
     public class Cpu
     {
         readonly CpuMemory _memory;
@@ -119,7 +123,10 @@ namespace Nescafe
         bool irqInterrupt;
         bool nmiInterrupt;
 
-        // Current number of cycles executed
+        /// <summary>
+        /// Gets the current number of cycles executed by the CPU.
+        /// </summary>
+        /// <value>The current number of cycles executed by the CPU.</value>
         public int Cycles { get; private set; }
 
         // If positive, idle 1 cycle and deincrement each step
@@ -128,7 +135,10 @@ namespace Nescafe
         delegate void Instruction(AddressMode mode, ushort address);
         Instruction[] _instructions;
 
-
+        /// <summary>
+        /// Initializes a new <see cref="T:Nescafe.Cpu"/> CPU.
+        /// </summary>
+        /// <param name="console">The Console that this CPU is a part of</param>
         public Cpu(Console console)
         {
             _memory = console.CpuMemory;
@@ -154,6 +164,9 @@ namespace Nescafe
             };
         }
 
+        /// <summary>
+        /// Resets this CPU to its power on state.
+        /// </summary>
         public void Reset()
         {
             PC = _memory.Read16(0xFFFC);
@@ -169,21 +182,36 @@ namespace Nescafe
             nmiInterrupt = false;
         }
 
+        /// <summary>
+        /// Triggers a non maskable interrupt on this CPU.
+        /// </summary>
         public void TriggerNmi()
         {
             nmiInterrupt = true;
         }
 
+        /// <summary>
+        /// Triggers an interrupt on this CPU if the interrupt disable flag
+        /// is not set.
+        /// </summary>
         public void TriggerIrq()
         {
             if (!I) irqInterrupt = true;
         }
 
+        /// <summary>
+        /// Instructs the CPU to idle for the specified number of cycles.
+        /// </summary>
+        /// <param name="idleCycles">Idle cycles.</param>
         public void AddIdleCycles(int idleCycles)
         {
             _idle += idleCycles;
         }
 
+        /// <summary>
+        /// Executes the next CPU instruction specified by the Program Counter.
+        /// </summary>
+        /// <returns>The number of CPU cycles excuted</returns>
         public int Step()
         {
             if (_idle > 0)
@@ -362,12 +390,14 @@ namespace Nescafe
             I = true;
         }
 
-        // INSTRUCTIONS FOLLOW
+        // Illegal opcode, throw exception
         void ___(AddressMode mode, ushort address)
         {
-            throw new Exception("OpCode is not implemented");
+            throw new Exception("Illegal Opcode");
         }
 
+        // INSTRUCTIONS FOLLOW
+        // BRK - Force Interrupt
         void brk(AddressMode mode, ushort address)
         {
             PushStack16(PC);
@@ -376,6 +406,7 @@ namespace Nescafe
             PC = _memory.Read16((ushort)0xFFFE);
         }
 
+        // ROR - Rotate Right
         void ror(AddressMode mode, ushort address)
         {
             bool Corig = C;
@@ -401,76 +432,89 @@ namespace Nescafe
             }
         }
 
+        // RTI - Return from Interrupt
         void rti(AddressMode mode, ushort address)
         {
             SetProcessorFlags(PullStack());
             PC = PullStack16();
         }
 
+        // TXS - Transfer X to Stack Pointer
         void txs(AddressMode mode, ushort address)
         {
             S = X;
         }
 
+        // TSX - Transfer Stack Pointer to X
         void tsx(AddressMode mode, ushort address)
         {
             X = S;
             SetZn(X);
         }
 
+        // TXA - Transfer X to Accumulator
         void txa(AddressMode mode, ushort address)
         {
             A = X;
             SetZn(A);
         }
 
+        // TYA - Transfer Y to Accumulator
         void tya(AddressMode mode, ushort address)
         {
             A = Y;
             SetZn(A);
         }
 
+        // TAY - Transfer Accumulator to Y
         void tay(AddressMode mode, ushort address)
         {
             Y = A;
             SetZn(Y);
         }
 
+        // TAX  - Transfer Accumulator to X
         void tax(AddressMode mode, ushort address)
         {
             X = A;
             SetZn(X);
         }
 
+        // DEX - Deincrement X
         void dex(AddressMode mode, ushort address)
         {
             X--;
             SetZn(X);
         }
 
+        // DEY - Deincrement Y
         void dey(AddressMode mode, ushort address)
         {
             Y--;
             SetZn(Y);
         }
 
+        // INX - Increment X
         void inx(AddressMode mode, ushort address)
         {
             X++;
             SetZn(X);
         }
 
+        // INY - Increment Y
         void iny(AddressMode mode, ushort address)
         {
             Y++;
             SetZn(Y);
         }
 
+        // STY - Store Y Register
         void sty(AddressMode mode, ushort address)
         {
             _memory.Write(address, Y);
         }
 
+        // CPX - Compare X Register
         void cpx(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
@@ -478,6 +522,7 @@ namespace Nescafe
             C = X >= data;
         }
 
+        // CPX - Compare Y Register
         void cpy(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
@@ -485,6 +530,7 @@ namespace Nescafe
             C = Y >= data;
         }
 
+        // SBC - Subtract with Carry
         void sbc(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
@@ -502,6 +548,7 @@ namespace Nescafe
             A = result;
         }
 
+        // ADC - Add with Carry
         void adc(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
@@ -521,6 +568,7 @@ namespace Nescafe
             A = sum;
         }
 
+        // EOR - Exclusive OR
         void eor(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
@@ -528,26 +576,31 @@ namespace Nescafe
             SetZn(A);
         }
 
+        // CLV - Clear Overflow Flag
         void clv(AddressMode mode, ushort address)
         {
             V = false;
         }
 
+        // BMI - Branch if Minus
         void bmi(AddressMode mode, ushort address)
         {
             PC = N ? address : PC;
         }
 
+        // PLP - Pull Processor Status
         void plp(AddressMode mode, ushort address)
         {
             SetProcessorFlags((byte)(PullStack() & ~(0x10)));
         }
 
+        // CLD - Clear Decimal Mode
         void cld(AddressMode mode, ushort address)
         {
             D = false;
         }
 
+        // CMP - Compare
         void cmp(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
@@ -555,6 +608,7 @@ namespace Nescafe
             SetZn((byte)(A - data));
         }
 
+        // AND - Logical AND
         void and(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
@@ -562,59 +616,69 @@ namespace Nescafe
             SetZn(A);
         }
 
+        // PLA - Pull Accumulator
         void pla(AddressMode mode, ushort address)
         {
             A = PullStack();
             SetZn(A);
         }
 
+        // PHP - Push Processor Status
         void php(AddressMode mode, ushort address)
         {
             PushStack((byte)(GetStatusFlags() | 0x10));
         }
 
+        // SED - Set Decimal Flag
         void sed(AddressMode mode, ushort address)
         {
             D = true;
         }
 
+        // CLI - Clear Interrupt Disable
         void cli(AddressMode mode, ushort address)
         {
             I = false;
         }
 
+        // SEI - Set Interrupt Disable
         void sei(AddressMode mode, ushort address)
         {
             I = true;
         }
 
+        // DEC - Deincrement Memory
         void dec(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
-            data -= 1;
+            data--;
             _memory.Write(address, data);
             SetZn(data);
         }
 
+        // INC - Increment Memory
         void inc(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
-            data += 1;
+            data++;
             _memory.Write(address, data);
             SetZn(data);
         }
 
+        // RTS - Return from Subroutine
         void rts(AddressMode mode, ushort address)
         {
             PC = (ushort)(PullStack16() + 1);
         }
 
+        // JSR - Jump to Subroutine
         void jsr(AddressMode mode, ushort address)
         {
             PushStack16((ushort)(PC - 1));
             PC = address;
         }
 
+        // BPL - Branch if Positive
         void bpl(AddressMode mode, ushort address)
         {
             if (!N)
@@ -624,6 +688,7 @@ namespace Nescafe
             }
         }
 
+        // BVC - Branch if Overflow Clear
         void bvc(AddressMode mode, ushort address)
         {
             if (!V)
@@ -633,6 +698,7 @@ namespace Nescafe
             }
         }
 
+        // BVS - Branch if Overflow Set
         void bvs(AddressMode mode, ushort address)
         {
             if (V)
@@ -642,6 +708,7 @@ namespace Nescafe
             }
         }
 
+        // BIT - Bit Test
         void bit(AddressMode mode, ushort address)
         {
             byte data = _memory.Read(address);
@@ -650,6 +717,7 @@ namespace Nescafe
             Z = (data & A) == 0;
         }
 
+        // BNE - Branch if Not Equal
         void bne(AddressMode mode, ushort address)
         {
             if (!Z)
@@ -659,6 +727,7 @@ namespace Nescafe
             }
         }
 
+        // BEQ - Branch if Equal
         void beq(AddressMode mode, ushort address)
         {
             if (Z)
@@ -668,11 +737,13 @@ namespace Nescafe
             }
         }
 
+        // CLC - Clear Carry Flag
         void clc(AddressMode mode, ushort address)
         {
             C = false;
         }
 
+        // BCC - Branch if Carry Clear
         void bcc(AddressMode mode, ushort address)
         {
             if (!C)
@@ -682,6 +753,7 @@ namespace Nescafe
             }
         }
 
+        // BCs - Branch if Carry Set
         void bcs(AddressMode mode, ushort address)
         {
             if (C)
@@ -691,60 +763,71 @@ namespace Nescafe
             }
         }
 
+        // SEC - Set Carry Flag
         void sec(AddressMode mode, ushort address)
         {
             C = true;
         }
 
+        // NOP - No Operation
         void nop(AddressMode mode, ushort address)
         {
 
         }
 
+        // STX - Store X Register
         void stx(AddressMode mode, ushort address)
         {
             _memory.Write(address, X);
         }
 
+        // LDY - Load Y Register
         void ldy(AddressMode mode, ushort address)
         {
             Y = _memory.Read(address);
             SetZn(Y);
         }
 
+        // LDX - Load X Register
         void ldx(AddressMode mode, ushort address)
         {
             X = _memory.Read(address);
             SetZn(X);
         }
 
+        // JMP - Jump
         void jmp(AddressMode mode, ushort address)
         {
             PC = address;
         }
 
+        // STA - Store Accumulator
         void sta(AddressMode mode, ushort address)
         {
             _memory.Write(address, A);
         }
 
+        // ORA - Logical Inclusive OR
         void ora(AddressMode mode, ushort address)
         {
             A |= _memory.Read(address);
             SetZn(A);
         }
 
+        // LDA - Load A Register
         void lda(AddressMode mode, ushort address)
         {
             A = _memory.Read(address);
             SetZn(A);
         }
 
+        // PHA - Push Accumulator
         void pha(AddressMode mode, ushort address)
         {
             PushStack(A);
         }
 
+        // ASL - Arithmetic Shift Left
         void asl(AddressMode mode, ushort address)
         {
             if (mode == AddressMode.Accumulator)
@@ -763,6 +846,7 @@ namespace Nescafe
             }
         }
 
+        // ROL - Rotate Left
         void rol(AddressMode mode, ushort address)
         {
             bool Corig = C;
@@ -788,6 +872,7 @@ namespace Nescafe
             }
         }
 
+        // LSR - Logical Shift Right
         void lsr(AddressMode mode, ushort address)
         {
             if (mode == AddressMode.Accumulator)
