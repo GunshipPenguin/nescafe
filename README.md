@@ -43,6 +43,7 @@ The following iNES mappers are supported:
 - [0 (NROM)](https://wiki.nesdev.com/w/index.php/NROM)
 - [1 (MMC1)](https://wiki.nesdev.com/w/index.php/MMC1)
 - [2 (UxROM)](https://wiki.nesdev.com/w/index.php/UxROM)
+- [4 (MMC3)](https://wiki.nesdev.com/w/index.php/MMC3)
 
 # Limitations
 
