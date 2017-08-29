@@ -2,12 +2,19 @@
 
 namespace Nescafe
 {
+    /// <summary>
+    /// Represents the PPU's memory and memory mapped IO.
+    /// </summary>
     public class PpuMemory : Memory
     {
         readonly Console _console;
         readonly byte[] _vRam;
         readonly byte[] _paletteRam;
 
+        /// <summary>
+        /// Construct a new PPU memory device.
+        /// </summary>
+        /// <param name="console">the console that this PPU memory is a part of</param>
         public PpuMemory(Console console)
         {
             _console = console;
@@ -15,12 +22,21 @@ namespace Nescafe
             _paletteRam = new byte[32];
         }
 
+        /// <summary>
+        /// Reset this PPU memory to its startup state.
+        /// </summary>
         public void Reset()
         {
             Array.Clear(_vRam, 0, _vRam.Length);
             Array.Clear(_paletteRam, 0, _paletteRam.Length);
         }
 
+        /// <summary>
+        /// Given a palette RAM address ($3F00-$3FFF), return the index in
+        /// palette RAM that it corresponds to.
+        /// </summary>
+        /// <returns>The palette ram index.</returns>
+        /// <param name="address">Address.</param>
         public ushort GetPaletteRamIndex(ushort address)
         {
             ushort index = (ushort)((address - 0x3F00) % 32);
@@ -30,6 +46,11 @@ namespace Nescafe
             else return index;
         }
 
+        /// <summary>
+        /// Read a byte of memory from the specified address.
+        /// </summary>
+        /// <returns>the byte read</returns>
+        /// <param name="address">the address to read from</param>
         public override byte Read(ushort address)
         {
             byte data;
@@ -52,6 +73,11 @@ namespace Nescafe
             return data;
         }
 
+        /// <summary>
+        /// Write a byte of memory to the specified address.
+        /// </summary>
+        /// <param name="address">the address to write to</param>
+        /// <param name="data">the byte to write to the specified address</param>
         public override void Write(ushort address, byte data)
         {
             if (address < 0x2000)
