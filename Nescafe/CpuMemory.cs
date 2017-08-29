@@ -2,17 +2,27 @@
 
 namespace Nescafe
 {
+    /// <summary>
+    /// Represents the CPU's memory and memory mapped IO.
+    /// </summary>
     public class CpuMemory : Memory
     {
         // First 2KB of internal ram
         readonly byte[] _internalRam = new byte[2048];
         readonly Console _console;
 
+        /// <summary>
+        /// Construct a new CPU memory device.
+        /// </summary>
+        /// <param name="console">the console that this CPU Memory is a part of</param>
         public CpuMemory(Console console)
         {
             _console = console;
         }
 
+        /// <summary>
+        /// Resets this CPU Memory to its startup state
+        /// </summary>
         public void Reset()
         {
             Array.Clear(_internalRam, 0, _internalRam.Length);
@@ -70,6 +80,11 @@ namespace Nescafe
             }
         }
 
+        /// <summary>
+        /// Read a byte of memory from the specified address.
+        /// </summary>
+        /// <returns>the byte read</returns>
+        /// <param name="address">the address to read from</param>
         public override byte Read(ushort address)
         {
             byte data;
@@ -102,6 +117,11 @@ namespace Nescafe
             return data;
         }
 
+        /// <summary>
+        /// Write a byte of memory to the specified address.
+        /// </summary>
+        /// <param name="address">the address to write to</param>
+        /// <param name="data">the byte to write to the specified address</param>
         public override void Write(ushort address, byte data)
         {
             if (address < 0x2000) // Internal CPU RAM
