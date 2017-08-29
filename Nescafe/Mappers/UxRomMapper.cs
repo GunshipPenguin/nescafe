@@ -1,11 +1,18 @@
 ﻿using System;
 namespace Nescafe.Mappers
 {
+    /// <summary>
+    /// Represents Nintendo's UNROM/UOROM and similar mappers.
+    /// </summary>
     public class UxRomMapper : Mapper
     {
         int _bank0Offset;
         int _bank1Offset;
 
+        /// <summary>
+        /// Construct a new UxROM mapper.
+        /// </summary>
+        /// <param name="console">the console that this mapper is a part of</param>
         public UxRomMapper(Console console)
         {
             _console = console;
@@ -19,6 +26,11 @@ namespace Nescafe.Mappers
             _vramMirroringType = _console.Cartridge.VerticalVramMirroring ? VramMirroring.Vertical : VramMirroring.Horizontal;
         }
 
+        /// <summary>
+        /// Read a byte from the specified address.
+        /// </summary>
+        /// <returns>the byte read from the specified address</returns>
+        /// <param name="address">the address to read a byte from</param>
         public override byte Read(ushort address)
         {
             byte data;
@@ -46,6 +58,11 @@ namespace Nescafe.Mappers
             return data;
         }
 
+        /// <summary>
+        /// Writes a byte to the specified address.
+        /// </summary>
+        /// <param name="address">the address to write a byte to</param>
+        /// <param name="data">the byte to write to the address</param>
         public override void Write(ushort address, byte data)
         {
             if (address < 0x2000) // CHR ROM or RAM
