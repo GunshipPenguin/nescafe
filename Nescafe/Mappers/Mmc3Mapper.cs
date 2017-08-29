@@ -127,7 +127,10 @@ namespace Nescafe.Mappers
             int cycle = _console.Ppu.Cycle;
             bool renderingEnabled = _console.Ppu.RenderingEnabled;
 
-            if (renderingEnabled && cycle == 260 && scanline >= 0 && scanline < 240) ClockA12();
+            // The choice of 315 as the PPU Cycle to clock A12 on is slightly arbitrary
+            // but seems to work alright for most games
+            // Read "IRQ Specifics" at https://wiki.nesdev.com/w/index.php/MMC3
+            if (renderingEnabled && cycle == 315 && scanline >= 0 && scanline < 240) ClockA12();
         }
 
         void ClockA12()
