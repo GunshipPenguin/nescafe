@@ -92,6 +92,9 @@ namespace Nescafe
             var fileLoadMenu = new ToolStripMenuItem("Load ROM", null, new EventHandler(LoadCartridge));
             fileMenu.DropDownItems.Add(fileLoadMenu);
 
+            var screenshotMenu = new ToolStripMenuItem("Take Screenshot", null, new EventHandler(TakeScreenshot));
+            fileMenu.DropDownItems.Add(screenshotMenu);
+
             ms.Items.Add(fileMenu);
 
             // Help menu
@@ -103,6 +106,12 @@ namespace Nescafe
             ms.Items.Add(helpMenu);
 
             Controls.Add(ms);
+        }
+
+        void TakeScreenshot(object sender, EventArgs e)
+        {
+            String filename = "screenshot_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".png";
+            _frame.Save(filename);
         }
 
         void startNes()
