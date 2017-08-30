@@ -67,7 +67,7 @@ namespace Nescafe.Mappers
             {
                 int offset = (address / 0x1000) == 0 ? _chrBank0Offset : _chrBank1Offset;
                 offset += address % 0x1000;
-                data = _console.Cartridge.ReadPrgRom(offset);
+                data = _console.Cartridge.ReadChr(offset);
             }
             else if (address >= 0x6000 && address <= 0x7FFF) // 8 KB PRG RAM bank (CPU) $6000-$7FFF
             {
