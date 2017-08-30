@@ -41,7 +41,8 @@ namespace Nescafe.Mappers
             }
             else
             {
-                throw new Exception("Invalid mapper read");
+                // Open bus behaviour
+                data = 0;
             }
             return data;
         }
