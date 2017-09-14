@@ -37,7 +37,7 @@ namespace Nescafe
             KeyDown += new KeyEventHandler(OnKeyDown);
             KeyUp += new KeyEventHandler(OnKeyUp);
 
-            _nesThread = new Thread(new ThreadStart(startNes));
+            _nesThread = new Thread(new ThreadStart(StartNes));
             _nesThread.IsBackground = true;
         }
 
@@ -53,7 +53,7 @@ namespace Nescafe
 
         void StartConsole()
         {
-            _nesThread = new Thread(new ThreadStart(startNes));
+            _nesThread = new Thread(new ThreadStart(StartNes));
             _nesThread.IsBackground = true;
             _nesThread.Start();
         }
@@ -117,7 +117,7 @@ namespace Nescafe
             _frame.Save(filename);
         }
 
-        void startNes()
+        void StartNes()
         {
             _console.Start();
         }
@@ -209,15 +209,15 @@ namespace Nescafe
 
         void OnKeyDown(object sender, KeyEventArgs e)
         {
-            setControllerButton(true, e);
+            SetControllerButton(true, e);
         }
 
         void OnKeyUp(object sender, KeyEventArgs e)
         {
-            setControllerButton(false, e);
+            SetControllerButton(false, e);
         }
 
-        void setControllerButton(bool state, KeyEventArgs e)
+        void SetControllerButton(bool state, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
