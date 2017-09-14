@@ -14,11 +14,16 @@ namespace Nescafe
 
         Thread _nesThread;
 
+        Graphics g;
+
         public Ui()
         {
             Text = "NEScafé";
             Size = new Size(512, 480);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+
+            g = CreateGraphics();
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
 
             CenterToScreen();
             InitMenus();
@@ -28,8 +33,6 @@ namespace Nescafe
 
             _frame = new Bitmap(256, 240, PixelFormat.Format8bppIndexed);
             InitPalette();
-
-            Paint += new PaintEventHandler(OnPaint);
 
             KeyDown += new KeyEventHandler(OnKeyDown);
             KeyUp += new KeyEventHandler(OnKeyUp);
@@ -201,13 +204,7 @@ namespace Nescafe
             }
             _frame.UnlockBits(_frameData);
 
-            Invalidate();
-        }
-
-        void OnPaint(object sender, PaintEventArgs e)
-        {
-            e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-            e.Graphics.DrawImage(_frame, 0, 0, Size.Width, Size.Height);
+            g.DrawImage(_frame, 0, 0, Size.Width, Size.Height);
         }
 
         void OnKeyDown(object sender, KeyEventArgs e)
