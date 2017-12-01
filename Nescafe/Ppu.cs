@@ -1,9 +1,165 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Nescafe
 {
     /// <summary>
-    /// Represents a NTSC PPU.
+	/// Информация о спрайтах выводимых на экран
+	/// </summary>
+	public struct OAM
+	{
+		/// <summary>
+		/// 0 - Абсолютная координата верхнего левого угла спрайта по вертикали.
+		/// </summary>
+		public byte yTop;
+		/// <summary>
+		/// 1 - Номер иконки из знакогенератора
+		/// </summary>
+		public byte spriteNum;
+
+		public bool active
+		{
+			get
+			{
+				if (yTop == xTop && yTop == spriteNum && yTop == 248)
+					return false;
+				return true;
+			}
+		}
+
+		private byte _spriteAttr;
+		/// <summary>
+		/// Атрибуты спрайта
+		/// </summary>
+		public byte spriteAttr
+		{
+			set 
+			{
+				_spriteAttr = value;
+				paletteNum = (byte)(_spriteAttr & 0x03);
+				flipHoriz  = (_spriteAttr & 0x40)  != 0;
+				flipVert   = (_spriteAttr & 0x80)  != 0;
+				priority   = (_spriteAttr & 0x20)  != 0;
+			}
+			get 
+			{
+				return _spriteAttr;
+			}
+
+		}
+		/// <summary>
+		/// Координата верхнего левого угла спрайта по горизонтали.
+		/// </summary>
+		public byte xTop;
+		/// <summary>
+		/// Отразить по горизонтали
+		/// </summary>
+		public bool flipHoriz;
+		/// <summary>
+		/// Отразить по вертикали
+		/// </summary>
+		public bool flipVert;
+		/// <summary>
+		/// номер палитры
+		/// </summary>
+		public byte paletteNum;
+		/// <summary>
+		/// Приоритет отрисовки
+		/// false - background
+		/// </summary>
+		public bool priority;
+
+		/// <summary>
+		/// Сброс
+		/// </summary>
+		public void Clear()
+		{
+			yTop = 0;
+			spriteNum = 0;
+			_spriteAttr = 0;
+			paletteNum = 0;
+			flipHoriz = false;
+			flipVert = false;
+			priority = false;
+			xTop = 0;
+		}
+		/*
+		/// <summary>
+		/// значение
+		/// </summary>
+		public byte[] val
+		{
+			set 
+			{
+				yTop = value [0];
+				spriteNum = value [1];
+				spriteAttr = value [2];
+				xTop = value [3];
+			}
+			get 
+			{
+				return new byte[4] {yTop, spriteNum, _spriteAttr, xTop};
+			}
+		}
+		*/
+		/// <summary>
+		/// записать данные по смещению
+		/// младшие 2 бита адреса - это номер поля
+		/// </summary>
+		public void Write(ushort addr, byte data)
+		{
+			switch (addr & 3) 
+			{
+				case 0:
+					yTop = data;
+				break;
+				case 1:
+					spriteNum = data;
+				break;
+				case 2:
+					spriteAttr = data;
+				break;
+				case 3:
+					xTop = data;
+				break;
+			}
+		}
+		/// <summary>
+		/// прочитать данные по смещению
+		/// младшие 2 бита адреса - это номер поля
+		/// </summary>
+		public byte Read(ushort addr)
+		{
+			byte val = 0;
+			switch (addr & 3) 
+			{
+				case 0:
+					val = yTop;
+				break;
+				case 1:
+					val = spriteNum ;
+				break;
+				case 2:
+					val = _spriteAttr;
+				break;
+				case 3:
+					val = xTop;
+				break;
+			}
+			return val;
+		}
+	}
+
+
+    /// <summary>
+    /// Represents a NTSC
+	/// 
+	/// [P]icture 
+	/// [P]rocessor
+	/// [U]nit
+	/// 
+	/// http://dendy.migera.ru/nes/g02.html
+	/// 
     /// </summary>
     public class Ppu
     {
@@ -15,11 +171,24 @@ namespace Nescafe
 
         readonly PpuMemory _memory;
         readonly Console _console;
+		static readonly byte oamLength = 64;
+		static readonly byte sprLength = 8;
 
         // OAM / Sprite rendering
-        byte[] _oam;
+        //byte[] _oam;
+
+		/// <summary>
+		/// Информация о спрайтах и их позициях
+		/// может содержать информацию о 64 спрайтах (по 4 байт)
+		/// </summary>
+		public OAM[] _OAM;
+
         ushort _oamAddr;
-        byte[] _sprites;
+		/// <summary>
+		/// The sprites.
+		/// </summary>
+		public OAM[] _Sprites;
+
         int[] _spriteIndicies;
         int _numSprites;
 
@@ -36,7 +205,7 @@ namespace Nescafe
         public int Cycle { get; private set; }
 
         // Base background nametable address
-        ushort _baseNametableAddress;
+        //ushort _baseNametableAddress;
 
         // Address of pattern table used for background
         ushort _bgPatternTableAddress;
@@ -55,26 +224,26 @@ namespace Nescafe
         byte _flagSpriteZeroHit;
 
         // PPUCTRL Register flags
-        byte _flagBaseNametableAddr;
+        //byte _flagBaseNametableAddr;
         byte _flagVRamIncrement;
         byte _flagSpritePatternTableAddr;
         byte _flagBgPatternTableAddr;
         byte _flagSpriteSize;
-        byte _flagMasterSlaveSelect;
+        //byte _flagMasterSlaveSelect;
         byte _nmiOutput;
 
         // NMI Occurred flag
         byte _nmiOccurred;
 
         // PPUMASK Register flags
-        byte _flagGreyscale;
+        //byte _flagGreyscale;
         byte _flagShowBackgroundLeft;
         byte _flagShowSpritesLeft;
         byte _flagShowBackground;
         byte _flagShowSprites;
-        byte _flagEmphasizeRed;
-        byte _flagEmphasizeGreen;
-        byte _flagEmphasizeBlue;
+        //byte _flagEmphasizeRed;
+        //byte _flagEmphasizeGreen;
+        //byte _flagEmphasizeBlue;
 
         // Internal PPU Registers
         ushort v; // Current VRAM address (15 bits)
@@ -113,9 +282,12 @@ namespace Nescafe
 
             BitmapData = new byte[256 * 240];
 
-            _oam = new byte[256];
-            _sprites = new byte[32];
-            _spriteIndicies = new int[8];
+            //_oam = new byte[256];
+			_OAM = new OAM[oamLength];
+
+			//_sprites = new byte[32];
+			_Sprites = new OAM[sprLength];
+			_spriteIndicies = new int[sprLength];
         }
 
         /// <summary>
@@ -134,8 +306,12 @@ namespace Nescafe
             w = 0;
             f = 0;
 
-            Array.Clear(_oam, 0, _oam.Length);
-            Array.Clear(_sprites, 0, _sprites.Length);
+//			Array.Clear(_OAM, 0, _OAM.Length);
+			for (int i = 0; i<oamLength; i++)
+				_OAM [i].Clear ();
+//			Array.Clear(_Sprites, 0, _Sprites.Length);
+			for (int i = 0; i<sprLength; i++)
+				_Sprites [i].Clear ();
         }
 
         byte LookupBackgroundColor(byte data)
@@ -144,7 +320,8 @@ namespace Nescafe
             int paletteNum = (data >> 2) & 0x3;
 
             // Special case for universal background color
-            if (colorNum == 0) return _memory.Read(0x3F00);
+            if (colorNum == 0) 
+				return _memory.Read(0x3F00);
 
             ushort paletteAddress;
             switch (paletteNum)
@@ -175,7 +352,8 @@ namespace Nescafe
             int paletteNum = (data >> 2) & 0x3;
 
             // Special case for universal background color
-            if (colorNum == 0) return _memory.Read(0x3F00);
+            if (colorNum == 0) 
+				return _memory.Read(0x3F00);
 
             ushort paletteAddress;
             switch (paletteNum)
@@ -204,8 +382,10 @@ namespace Nescafe
         {
             int xPos = Cycle - 1;
 
-            if (_flagShowBackground == 0) return 0;
-            if (_flagShowBackgroundLeft == 0 && xPos < 8) return 0;
+            if (_flagShowBackground == 0) 
+				return 0;
+            if (_flagShowBackgroundLeft == 0 && xPos < 8)
+				return 0;
 
             return (byte)((_tileShiftReg >> (x * 4)) & 0xF);
         }
@@ -217,23 +397,27 @@ namespace Nescafe
 
             spriteIndex = 0;
 
-            if (_flagShowSprites == 0) return 0;
-            if (_flagShowSpritesLeft == 0 && xPos < 8) return 0;
+            if (_flagShowSprites == 0) 
+				return 0;
+            if (_flagShowSpritesLeft == 0 && xPos < 8) 
+				return 0;
 
             // 8x8 sprites all come from the same pattern table as specified by a write to PPUCTRL
             // 8x16 sprites come from a pattern table defined in their OAM data
             ushort _currSpritePatternTableAddr = _spritePatternTableAddress;
 
             // Get sprite pattern bitfield
-            for (int i = 0; i < _numSprites * 4; i += 4)
+            for (int i = 0; i < _numSprites; i ++)
             {
-                int spriteXLeft = _sprites[i + 3];
+//				int spriteXLeft = _Sprites[i + 3];
+				int spriteXLeft = _Sprites[i].xTop;
                 int offset = xPos - spriteXLeft;
 
                 if (offset <= 7 && offset >= 0)
                 {
                     // Found intersecting sprite
-                    int yOffset = yPos - _sprites[i];
+ 					//int yOffset = yPos - _sprites[i];
+					int yOffset = yPos - _Sprites[i].yTop;
 
                     byte patternIndex;
 
@@ -241,19 +425,24 @@ namespace Nescafe
                     // ar 8x8 or 8x16
                     if (_flagSpriteSize == 1)
                     {
-                        _currSpritePatternTableAddr = (ushort)((_sprites[i + 1] & 1) * 0x1000);
-                        patternIndex = (byte)(_sprites[i + 1] & 0xFE);
+						_currSpritePatternTableAddr = (ushort)((_Sprites[i].spriteNum & 1) * 0x1000);
+						patternIndex = (byte)(_Sprites[i].spriteNum & 0xFE);
                     }
                     else
                     {
-                        patternIndex = (byte)(_sprites[i + 1]);
+						patternIndex = (byte)(_Sprites[i].spriteNum);
                     }
 
                     ushort patternAddress = (ushort)(_currSpritePatternTableAddr + (patternIndex * 16));
 
-                    bool flipHoriz = (_sprites[i + 2] & 0x40) != 0;
-                    bool flipVert = (_sprites[i + 2] & 0x80) != 0;
-                    int colorNum = GetSpritePatternPixel(patternAddress, offset, yOffset, flipHoriz, flipVert);
+                    int colorNum = GetSpritePatternPixel
+						(
+							 patternAddress
+							,offset
+							,yOffset
+							,_Sprites [i].flipHoriz
+							,_Sprites [i].flipVert
+						);
 
                     // Handle transparent sprites
                     if (colorNum == 0)
@@ -262,8 +451,8 @@ namespace Nescafe
                     }
                     else // Non transparent sprite, return data
                     {
-                        byte paletteNum = (byte)(_sprites[i + 2] & 0x03);
-                        spriteIndex = i / 4;
+						byte paletteNum = _Sprites [i].paletteNum;
+                        spriteIndex = i;
                         return (byte)(((paletteNum << 2) | colorNum) & 0xF);
                     }
                 }
@@ -366,7 +555,8 @@ namespace Nescafe
 
         void EvalSprites()
         {
-            Array.Clear(_sprites, 0, _sprites.Length);
+			for (int i = 0; i<sprLength; i++)
+				_Sprites [i].Clear ();
             Array.Clear(_spriteIndicies, 0, _spriteIndicies.Length);
 
             // 8x8 or 8x16 sprites
@@ -376,26 +566,26 @@ namespace Nescafe
             int yPos = Scanline;
 
             // Sprite evaluation starts at the current OAM address and goes to the end of OAM (256 bytes)
-            for (int i = _oamAddr; i < 256; i += 4)
+//			for (int i = _oamAddr; i < (256 - _oamAddr); i += 4)
+			for (int i = _oamAddr>>2; i < oamLength; i ++)
             {
-                byte spriteYTop = _oam[i];
-
-                int offset = yPos - spriteYTop;
+//				byte spriteYTop = _oam[i];
+				int offset = yPos - _OAM[i].yTop;
 
                 // If this sprite is on the next scanline, copy it to the _sprites array for rendering
                 if (offset <= h && offset >= 0)
                 {
-                    if (_numSprites == 8)
+					if (_numSprites == sprLength)
                     {
                         _flagSpriteOverflow = 1;
                         break;
                     } 
                     else
                     {
-                        Array.Copy(_oam, i, _sprites, _numSprites * 4, 4);
-                        _spriteIndicies[_numSprites] = (i - _oamAddr) / 4;
+						//Array.Copy(_oam, i, _sprites, _numSprites * 4, 4);
+						_Sprites [_numSprites] = _OAM [i];
+						_spriteIndicies [_numSprites] = i - (_oamAddr >> 2);
                         _numSprites++;
-                        
                     }
                 }
             }
@@ -417,21 +607,27 @@ namespace Nescafe
 
             if (bgColorNum == 0)
             {
-                if (spriteColorNum == 0) color = LookupBackgroundColor(bgPixelData);
-                else color = LookupSpriteColor(spritePixelData);
+                if (spriteColorNum == 0)
+					color = LookupBackgroundColor(bgPixelData);
+                else
+					color = LookupSpriteColor(spritePixelData);
             }
             else
             {
-                if (spriteColorNum == 0) color = LookupBackgroundColor(bgPixelData);
+                if (spriteColorNum == 0)
+					color = LookupBackgroundColor(bgPixelData);
                 else // Both pixels opaque, choose depending on sprite priority
                 {
                     // Set sprite zero hit flag
-                    if (isSpriteZero) _flagSpriteZeroHit = 1;
+                    if (isSpriteZero)
+						_flagSpriteZeroHit = 1;
 
                     // Get sprite priority
-                    int priority = (_sprites[(spriteScanlineIndex * 4) + 2] >> 5) & 1;
-                    if (priority == 1) color = LookupBackgroundColor(bgPixelData);
-                    else color = LookupSpriteColor(spritePixelData);
+//					int priority = (_Sprites[(spriteScanlineIndex * 4) + 2] >> 5) & 1;
+					if (_Sprites[spriteScanlineIndex].priority)
+						color = LookupBackgroundColor(bgPixelData);
+                    else
+						color = LookupSpriteColor(spritePixelData);
                 }
             }
 
@@ -494,7 +690,8 @@ namespace Nescafe
             if (Scanline == 241 && Cycle == 1)
             {
                 _nmiOccurred = 1;
-                if (_nmiOutput != 0) _console.Cpu.TriggerNmi();
+                if (_nmiOutput != 0)
+					_console.Cpu.TriggerNmi();
             }
 
             bool renderingEnabled = (_flagShowBackground != 0) || (_flagShowSprites != 0);
@@ -547,8 +744,8 @@ namespace Nescafe
 
             // Scanline types
             bool renderScanline = Scanline >= 0 && Scanline < 240;
-            bool idleScanline = Scanline == 240;
-            bool vBlankScanline = Scanline > 240;
+            //bool idleScanline = Scanline == 240;
+            //bool vBlankScanline = Scanline > 240;
             bool preRenderScanline = Scanline == 261;
 
             // nmiOccurred flag cleared on prerender scanline at cycle 1
@@ -564,11 +761,14 @@ namespace Nescafe
                 // Evaluate sprites at cycle 257 of each render scanline
                 if (Cycle == 257)
                 {
-                    if (renderScanline) EvalSprites();
-                    else _numSprites = 0;
+                    if (renderScanline) 
+						EvalSprites();
+                    else
+						_numSprites = 0;
                 }
 
-                if (renderCycle && renderScanline) RenderPixel();
+                if (renderCycle && renderScanline) 
+					RenderPixel();
 
                 // Read rendering data into internal latches and update _tileShiftReg
                 // with those latches every 8 cycles
@@ -600,13 +800,16 @@ namespace Nescafe
                 }
 
                 // OAMADDR is set to 0 during each of ticks 257-320 (the sprite tile loading interval) of the pre-render and visible scanlines. 
-                if (Cycle > 257 && Cycle <= 320 && (preRenderScanline || renderScanline)) _oamAddr = 0;
+                if (Cycle > 257 && Cycle <= 320 && (preRenderScanline || renderScanline))
+					_oamAddr = 0;
 
                 // Copy horizontal position data from t to v on _cycle 257 of each scanline if rendering enabled
-                if (Cycle == 257 && (renderScanline || preRenderScanline)) CopyHorizPositionData();
+                if (Cycle == 257 && (renderScanline || preRenderScanline)) 
+					CopyHorizPositionData();
 
                 // Copy vertical position data from t to v repeatedly from cycle 280 to 304 (if rendering is enabled)
-                if (Cycle >= 280 && Cycle <= 304 && Scanline == 261) CopyVertPositionData();
+                if (Cycle >= 280 && Cycle <= 304 && Scanline == 261) 
+					CopyVertPositionData();
             }
         }
 
@@ -678,16 +881,16 @@ namespace Nescafe
         // $2000
         void WritePpuCtrl(byte data)
         {
-            _flagBaseNametableAddr = (byte)(data & 0x3);
+            //_flagBaseNametableAddr = (byte)(data & 0x3);
             _flagVRamIncrement = (byte)((data >> 2) & 1);
             _flagSpritePatternTableAddr = (byte)((data >> 3) & 1);
             _flagBgPatternTableAddr = (byte)((data >> 4) & 1);
             _flagSpriteSize = (byte)((data >> 5) & 1);
-            _flagMasterSlaveSelect = (byte)((data >> 6) & 1);
+            //_flagMasterSlaveSelect = (byte)((data >> 6) & 1);
             _nmiOutput = (byte)((data >> 7) & 1);
 
             // Set values based off flags
-            _baseNametableAddress = (ushort)(0x2000 + 0x400 * _flagBaseNametableAddr);
+            //_baseNametableAddress = (ushort)(0x2000 + 0x400 * _flagBaseNametableAddr);
             _vRamIncrement = (_flagVRamIncrement == 0) ? 1 : 32;
             _bgPatternTableAddress = (ushort)(_flagBgPatternTableAddr == 0 ? 0x0000 : 0x1000);
             _spritePatternTableAddress = (ushort)(0x1000 * _flagSpritePatternTableAddr);
@@ -699,14 +902,14 @@ namespace Nescafe
         // $2001
         void WritePpuMask(byte data)
         {
-            _flagGreyscale = (byte)(data & 1);
+            //_flagGreyscale = (byte)(data & 1);
             _flagShowBackgroundLeft = (byte)((data >> 1) & 1);
             _flagShowSpritesLeft = (byte)((data >> 2) & 1);
             _flagShowBackground = (byte)((data >> 3) & 1);
             _flagShowSprites = (byte)((data >> 4) & 1);
-            _flagEmphasizeRed = (byte)((data >> 5) & 1);
-            _flagEmphasizeGreen = (byte)((data >> 6) & 1);
-            _flagEmphasizeBlue = (byte)((data >> 7) & 1);
+            //_flagEmphasizeRed = (byte)((data >> 5) & 1);
+            //_flagEmphasizeGreen = (byte)((data >> 6) & 1);
+            //_flagEmphasizeBlue = (byte)((data >> 7) & 1);
         }
 
         // $4014
@@ -718,7 +921,7 @@ namespace Nescafe
         // $2004
         void WriteOamData(byte data)
         {
-            _oam[_oamAddr] = data;
+			_OAM[_oamAddr>>2].Write(_oamAddr, data);
             _oamAddr++;
         }
 
@@ -778,7 +981,9 @@ namespace Nescafe
         void WriteOamDma(byte data)
         {
             ushort startAddr = (ushort)(data << 8);
-            _console.CpuMemory.ReadBufWrapping(_oam, _oamAddr, startAddr, 256);
+
+			byte index = (byte)( _oamAddr >> 2);
+			_console.CpuMemory.ReadBufOAM(_OAM, index, startAddr, 255);
 
             // OAM DMA always takes at least 513 CPU cycles
             _console.Cpu.AddIdleCycles(513);
@@ -808,7 +1013,7 @@ namespace Nescafe
         // $2004
         byte ReadOamData()
         {
-            return _oam[_oamAddr];
+			return _OAM[_oamAddr>>2].Read(_oamAddr);
         }
 
         // $2007
