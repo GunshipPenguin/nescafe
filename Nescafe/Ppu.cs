@@ -376,7 +376,7 @@ namespace Nescafe
             int yPos = Scanline;
 
             // Sprite evaluation starts at the current OAM address and goes to the end of OAM (256 bytes)
-            for (int i = _oamAddr; i < (256 - _oamAddr); i += 4)
+            for (int i = _oamAddr; i < 256; i += 4)
             {
                 byte spriteYTop = _oam[i];
 
