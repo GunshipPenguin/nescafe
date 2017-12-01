@@ -1,6 +1,6 @@
 # NEScafé :video_game: :coffee:
-[![Travis](https://img.shields.io/travis/GunshipPenguin/nescafe.svg)](https://travis-ci.org/GunshipPenguin/nescafe/)
-[![AppVeyor](https://img.shields.io/appveyor/ci/GunshipPenguin/nescafe.svg)](https://ci.appveyor.com/project/GunshipPenguin/nescafe)
+[![Travis](https://img.shields.io/travis/GunshipPenguin/nescafe/master.svg)](https://travis-ci.org/GunshipPenguin/nescafe/)
+[![AppVeyor](https://ci.appveyor.com/api/projects/status/wlachyvx7o80tr94/branch/master?svg=true)](https://ci.appveyor.com/project/GunshipPenguin/nescafe)
 
 A Nintendo Entertainment System (NES) emulator written in C#.
 
