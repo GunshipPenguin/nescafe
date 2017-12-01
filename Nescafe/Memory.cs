@@ -61,6 +61,35 @@
             }
         }
 
+		/// <summary>
+		/// Reads bytes into OAM
+		/// </summary>
+		/// <param name="buffer">Buffer.</param>
+		/// <param name="startIndex">Start index.</param>
+		/// <param name="startAddress">Start address.</param>
+		/// <param name="size">Size.</param>
+		public void ReadBufOAM(OAM[] buffer, byte startIndex, ushort startAddress, ushort size)
+		{
+			byte index = startIndex;
+			ushort bytesRead = 0;
+			ushort address = startAddress;
+			byte len = (byte)buffer.Length;
+			while (bytesRead < size)
+			{
+				if (index >= len) 
+					index = 0;
+
+				buffer[index].yTop = Read(address++);
+				buffer[index].spriteNum = Read(address++);
+				buffer[index].spriteAttr = Read(address++);
+				buffer[index].xTop = Read(address++);
+
+				bytesRead+=4;
+				index++;
+			}
+		}
+
+
         /// <summary>
         /// Reads two bytes from the specified address (little endian).
         /// </summary>
