@@ -173,7 +173,7 @@ namespace Nescafe
                 long timeTaken = frameWatch.ElapsedMilliseconds;
 
                 int sleepTime = (int)((1000.0 / 60) - timeTaken);
-                Thread.Sleep(sleepTime);
+                Thread.Sleep(Math.Max(sleepTime, 0));
             }
         }
     }    
