@@ -29,7 +29,7 @@ Grab the latest build [from AppVeyor](https://ci.appveyor.com/project/GunshipPen
 
 Compile with Visual Studio or from the command line with:
 
-`msbuild /property:Configuration=Release Nescafe.sln`
+`dotnet build Nescafe.sln`
 
 # Loading a ROM
 
