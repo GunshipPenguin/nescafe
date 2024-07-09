@@ -18,20 +18,25 @@ namespace Nescafe
 
 		Graphics g;
 
+		FormWindowState _state;
+
 		protected override void OnResize(EventArgs e)
 		{
 			base.OnResize(e);
-			g = CreateGraphics();
-			g.InterpolationMode = InterpolationMode.NearestNeighbor;
-			if (WindowState == FormWindowState.Maximized)
+			if (_state != WindowState)
 			{
+				g = CreateGraphics();
+				g.InterpolationMode = InterpolationMode.NearestNeighbor;
 				g.Clear(Color.Black);
 			}
+			_state = WindowState;
 		}
 
 		protected override void OnResizeEnd(EventArgs e)
 		{
 			base.OnResizeEnd(e);
+			g = CreateGraphics();
+			g.InterpolationMode = InterpolationMode.NearestNeighbor;
 			g.Clear(Color.Black);
 		}
 
@@ -224,7 +229,14 @@ namespace Nescafe
 			}
 			_frame.UnlockBits(_frameData);
 
-			g.DrawImage(_frame, 0, 0, (int)Math.Round(Size.Height * 1.0666666666666666666666666666667, 0), Size.Height);
+			var width = (int)Math.Round(Size.Height * 1.0666666666666666666666666666667, 0);
+			var height = Size.Height;
+			var x = 0;
+			if (width < Size.Width)
+			{
+				x = (Size.Width - width) / 2;
+			}
+			g.DrawImage(_frame, x, 0, width, height);
 		}
 
 		void OnKeyDown(object sender, KeyEventArgs e)
