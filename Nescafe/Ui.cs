@@ -5,6 +5,8 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Threading;
 
+//0,9375
+//
 namespace Nescafe
 {
 	class Ui : Form
@@ -16,11 +18,28 @@ namespace Nescafe
 
 		Graphics g;
 
+		protected override void OnResize(EventArgs e)
+		{
+			base.OnResize(e);
+			g = CreateGraphics();
+			g.InterpolationMode = InterpolationMode.NearestNeighbor;
+			if (WindowState == FormWindowState.Maximized)
+			{
+				g.Clear(Color.Black);
+			}
+		}
+
+		protected override void OnResizeEnd(EventArgs e)
+		{
+			base.OnResizeEnd(e);
+			g.Clear(Color.Black);
+		}
+
 		public Ui()
 		{
 			Text = "NEScafé";
 			Size = new Size(512, 480);
-			FormBorderStyle = FormBorderStyle.FixedSingle;
+			FormBorderStyle = FormBorderStyle.Sizable;
 
 			g = CreateGraphics();
 			g.InterpolationMode = InterpolationMode.NearestNeighbor;
@@ -205,7 +224,7 @@ namespace Nescafe
 			}
 			_frame.UnlockBits(_frameData);
 
-			g.DrawImage(_frame, 0, 0, Size.Width, Size.Height);
+			g.DrawImage(_frame, 0, 0, (int)Math.Round(Size.Height * 1.0666666666666666666666666666667, 0), Size.Height);
 		}
 
 		void OnKeyDown(object sender, KeyEventArgs e)
